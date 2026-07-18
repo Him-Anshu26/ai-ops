@@ -1,0 +1,31 @@
+AI Ops Monitoring Alert
+
+Alert ID:
+{{ alert.id }}
+
+Service:
+{{ alert.service.name }}
+
+Alert Type:
+{{ alert.get_alert_type_display }}
+
+Severity:
+{{ alert.get_severity_display }}
+
+Status:
+{{ alert.get_status_display }}
+
+Message:
+{{ alert.message }}
+
+Trigger Count:
+{{ alert.trigger_count }}
+
+Created At:
+{{ alert.created_at }}
+
+Last Triggered:
+{{ alert.last_triggered_at }}
+
+--
+AI Ops Monitoring System
