@@ -31,20 +31,17 @@ urlpatterns = [
         'api/v1/accounts/',
         include('accounts.urls')
     ),
-
-    path('api/v1/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/v1/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/v1/docs/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
-
-
     path(
         'api/v1/monitoring/',
         include('monitoring.urls')
     ),
-
     path(
         'api/v1/alerts/',
         include('alerts.urls')
     ),
+
+    path('api/v1/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/v1/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/v1/docs/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     
 ]

@@ -20,9 +20,6 @@ REST_FRAMEWORK["DEFAULT_PERMISSION_CLASSES"] = [
 ]
 
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-
-
 
 
 
