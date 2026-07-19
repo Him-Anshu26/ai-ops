@@ -169,7 +169,6 @@ class LoginAPIView(APIView):
 # VERIFY EMAIL API
 class VerifyEmailAPIView(APIView):
 
-    authentication_classes = []
     permission_classes = [IsAuthenticated] 
 
     @verify_email_schema
