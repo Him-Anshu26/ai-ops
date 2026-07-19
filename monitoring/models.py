@@ -81,7 +81,7 @@ class Service(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.name} ({self.created_by.username})"
+        return f"{self.name} ({self.created_by.email})"
     
 
 
