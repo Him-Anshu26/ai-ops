@@ -55,7 +55,7 @@ class LogViewSet(
     # Query optimization
     queryset = (
         Log.objects
-        .select_related('service')
+        .select_related('service', 'service__created_by')
         .order_by('-created_at')
     )
 
