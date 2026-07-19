@@ -170,7 +170,7 @@ class AlertViewSet(
 
 
 
-
+    @list_alerts_schema
     def list(self, request, *args, **kwargs):
         """
         GET /alerts/
@@ -185,7 +185,7 @@ class AlertViewSet(
 
 
 
-
+    @create_alert_schema
     def create(self, request, *args, **kwargs):
         """
         POST /alerts/
@@ -205,7 +205,7 @@ class AlertViewSet(
 
 
 
-
+    @retrieve_alert_schema
     def retrieve(self, request, *args, **kwargs):
         """
         GET /alerts/{id}/
@@ -217,7 +217,7 @@ class AlertViewSet(
 
 
 
-
+    @resolve_alert_schema
     @action(
         detail=True,
         methods=['post'],
@@ -255,108 +255,13 @@ class AlertViewSet(
         )
 
         # Return updated alert using read serializer
-        response_serializer = AlertReadSerializer(alert)
+        response_serializer = AlertReadSerializer(
+            alert,
+            context={"request": request},
+        )
 
         return Response(
             response_serializer.data,
             status=status.HTTP_200_OK,
         )
     
-
-
-
-@list_alerts_schema
-def list(self, request, *args, **kwargs):
-    """
-    GET /alerts/
-
-    Returns paginated alerts with:
-    - filtering
-    - ordering
-    - cursor pagination
-    """
-
-    return super().list(request, *args, **kwargs)
-
-
-
-
-@create_alert_schema
-def create(self, request, *args, **kwargs):
-    """
-    POST /alerts/
-
-    Temporary endpoint for:
-    - manual testing
-    - QA workflows
-    - development purposes
-
-    Future production flow:
-
-    Logs
-        ↓
-    Alert Engine
-        ↓
-    Alert Creation
-    """
-
-    return super().create(request, *args, **kwargs)
-
-
-
-
-@retrieve_alert_schema
-def retrieve(self, request, *args, **kwargs):
-    """
-    GET /alerts/{id}/
-
-    Returns detailed alert information.
-    """
-
-    return super().retrieve(request, *args, **kwargs)
-
-
-
-
-@resolve_alert_schema
-@action(
-    detail=True,
-    methods=['post'],
-    url_path='resolve',
-)
-def resolve(self, request, *args, **kwargs):
-    """
-    POST /alerts/{id}/resolve/
-
-    Controlled workflow endpoint for resolving alerts.
-
-    Why custom action instead of PATCH?
-
-    Because resolving an alert is:
-    - workflow-driven
-    - audit-sensitive
-    - state-transition logic
-
-    NOT generic CRUD updating.
-    """
-
-    alert = self.get_object()
-
-    serializer = self.get_serializer(
-        alert,
-        data=request.data,
-        partial=True,
-    )
-
-    serializer.is_valid(raise_exception=True)
-
-    serializer.save(
-        resolved_at=timezone.now(),
-    )
-
-    response_serializer = AlertReadSerializer(alert)
-
-    return Response(
-        response_serializer.data,
-        status=status.HTTP_200_OK,
-    )
