@@ -113,19 +113,19 @@
 
             <tr>
                 <th>Created At</th>
-                <td>{{ alert.created_at }}</td>
+                <td>{{ alert.created_at|date:"Y-m-d H:i:s T" }}</td>
             </tr>
 
             <tr>
                 <th>Last Triggered</th>
-                <td>{{ alert.last_triggered_at }}</td>
+                <td>{{ alert.last_triggered_at|date:"Y-m-d H:i:s T" }}</td>
             </tr>
         </table>
 
         <div class="message">
             <strong>Message</strong>
 
-            <p>{{ alert.message }}</p>
+            <p>{{ alert.message|linebreaksbr }}</p>
         </div>
 
     </div>
