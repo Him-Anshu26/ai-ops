@@ -1,3 +1,5 @@
+import logging
+
 from datetime import timedelta
 
 from django.db import transaction
@@ -30,6 +32,9 @@ from google.auth.transport import requests
 from allauth.socialaccount.models import SocialAccount
 from django.conf import settings
 
+
+
+logger = logging.getLogger(__name__)
 
 # Token expiry configuration
 EMAIL_VERIFICATION_EXPIRY_HOURS = 24
@@ -68,6 +73,11 @@ class CreateUserService:
 
             # User must verify email first
             is_verified=False,
+        )
+
+        logger.info(
+            "User registered successfully",
+            extra={"user_id": user.id},
         )
 
         # Return created user object
@@ -114,8 +124,8 @@ class SendVerificationEmailService:
 
         # this is the raw link with the unencoded token, useful for debugging
         # this token will be used when testing manual email verification in the postman
-        print("RAW VERIFICATION LINK:", verification_link)
-        print("Use This Token For Postman Verification:", raw_token)
+        # logger.info("RAW VERIFICATION LINK: %s", verification_link)
+        # logger.info("Use This Token For Postman Verification: %s", raw_token)
 
         # Send email to user
         send_email(
@@ -132,6 +142,14 @@ class SendVerificationEmailService:
 
             # Email recipient list
             recipient_list=[user.email],
+        )
+
+        logger.info(
+            "Verification email sent",
+            extra={
+                "user_id": user.id,
+                "email": user.email,
+            },
         )
 
 
@@ -194,6 +212,11 @@ class VerifyEmailService:
             # Update only changed field
             user.save(update_fields=["is_verified"])
 
+            logger.info(
+                "User email verified successfully",
+                extra={"user_id": user.id},
+            )
+
         # Delete token after successful usage
         # Verification token should be one-time use
         verification.delete()
@@ -233,6 +256,14 @@ class ResendVerificationEmailService:
 
         # Send new verification email
         send_verification_email(user)
+
+        logger.info(
+            "Verification email resent",
+            extra={
+                "user_id": user.id,
+                "email": user.email,
+            },
+        )
 
 
 # Service instance
@@ -296,6 +327,14 @@ class LoginUserService:
             session_id=session_id,
             refresh_token_hash=hash_token(refresh_token),
             is_active=True,
+        )
+
+        logger.info(
+            "User logged in",
+            extra={
+                "user_id": user.id,
+                "session_id": session_id,
+            },
         )
 
         # Return generated tokens
@@ -408,10 +447,18 @@ class LogoutUserService:
         # - audit history
         # - security tracking
         # - device history
-        UserSession.objects.filter(
+        updated = UserSession.objects.filter(
             session_id=session_id,
             is_active=True,
         ).update(is_active=False)
+
+        if updated:
+            logger.info(
+                "User logged out",
+                extra={
+                    "session_id": session_id,
+                },
+            )
 
 
 # Service instance
@@ -458,8 +505,8 @@ class RequestPasswordResetService:
 
         # this is the raw link with the unencoded token, useful for debugging
         # this token will be used when testing manual password reset in the postman
-        print("RAW RESET LINK:", reset_link)
-        print("Use This Token For Postman Reset:", raw_token)
+        # logger.info("RAW RESET LINK: %s", reset_link)
+        # logger.info("Use This Token For Postman Reset: %s", raw_token)
 
         # Send reset email
         send_email(
@@ -475,6 +522,14 @@ class RequestPasswordResetService:
             ),
 
             recipient_list=[user.email],
+        )
+
+        logger.info(
+            "Password reset email sent",
+            extra={
+                "user_id": user.id,
+                "email": user.email,
+            },
         )
 
 
@@ -540,6 +595,13 @@ class ResetPasswordService:
         # One-time usage only
         reset_token.delete()
 
+        logger.info(
+            "User password reset successfully",
+            extra={
+                "user_id": user.id,
+            },
+        )
+
 
 # Service instance
 reset_password = ResetPasswordService()
@@ -559,6 +621,13 @@ class CleanupExpiredVerificationTokensService:
         deleted_count, _ = EmailVerificationToken.objects.filter(
             created_at__lt=expiry_time
         ).delete()
+
+        logger.info(
+            "Expired verification tokens cleaned",
+            extra={
+                "deleted_count": deleted_count,
+            },
+        )
 
         # Return number of deleted rows
         return deleted_count
@@ -584,6 +653,13 @@ class CleanupExpiredPasswordResetTokensService:
         deleted_count, _ = PasswordResetToken.objects.filter(
             created_at__lt=expiry_time
         ).delete()
+
+        logger.info(
+            "Expired password reset tokens cleaned",
+            extra={
+                "deleted_count": deleted_count,
+            },
+        )
 
         # Return deleted rows count
         return deleted_count
@@ -612,6 +688,13 @@ class CleanupInactiveSessionsService:
             is_active=False,
             created_at__lt=retention_date,
         ).delete()
+
+        logger.info(
+            "Inactive sessions cleaned",
+            extra={
+                "deleted_count": deleted_count,
+            },
+        )
 
         # Return deleted rows count
         return deleted_count
@@ -791,6 +874,14 @@ class GoogleLoginService :
         # and issue JWTs
         tokens = self.create_user_session(
             user
+        )
+
+        logger.info(
+            "Google login successful",
+            extra={
+                "user_id": user.id,
+                "email": user.email,
+            },
         )
 
         return tokens
