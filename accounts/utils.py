@@ -3,6 +3,10 @@ import hashlib
 from django.core.mail import send_mail
 from django.conf import settings
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def generate_token():
     return secrets.token_urlsafe(32)
@@ -18,11 +22,11 @@ def send_email(subject: str,message: str,recipient_list: list[str],) -> None:
 
     if settings.DEBUG:
         # This is for the Development Environment, to see the email content in the console
-        print("\n========== RAW EMAIL ==========")
-        print("TO:", recipient_list)
-        print("SUBJECT:", subject)
-        print(message)
-        print("================================\n")
+        logger.debug("\n========== RAW EMAIL ==========")
+        logger.debug("TO: %s", recipient_list)
+        logger.debug("SUBJECT: %s", subject)
+        logger.debug("MESSAGE: %s", message)
+        logger.debug("================================\n")
 
 
 
