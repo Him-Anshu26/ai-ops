@@ -8,7 +8,8 @@ from accounts.views import(
     LogoutAPIView, 
     PasswordResetRequestAPIView,
     PasswordResetConfirmAPIView,
-    GoogleLoginAPIView
+    GoogleLoginAPIView,
+    GoogleLoginTestAPIView,
 )
 
 
@@ -23,4 +24,5 @@ urlpatterns = [
     path('password-reset/', PasswordResetRequestAPIView.as_view(), name='password-reset'),
     path('password-reset-confirm/', PasswordResetConfirmAPIView.as_view(), name='password-reset-confirm'),
     path('google-login/', GoogleLoginAPIView.as_view(), name='google-login'),
+    path("google-test/", GoogleLoginTestAPIView.as_view(), name="google-test"),
 ]
