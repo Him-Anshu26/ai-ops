@@ -4,6 +4,9 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 # from rest_framework.permissions import AllowAny
 
+from django.conf import settings
+from django.shortcuts import render
+
 
 from accounts.serializers import (
     GoogleLoginSerializer,
@@ -477,4 +480,17 @@ class GoogleLoginAPIView(APIView):
         )
 
 
+
+class GoogleLoginTestAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        return render(
+            request,
+            "accounts/google_login_test.html",
+            {
+                "GOOGLE_CLIENT_ID": settings.GOOGLE_CLIENT_ID,
+            },
+        )
         
