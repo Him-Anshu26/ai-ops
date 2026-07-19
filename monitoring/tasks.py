@@ -38,7 +38,11 @@ def process_log_for_alerts_task(log_id: int) -> None:
 
     
     try:
-        log = Log.objects.get(pk=log_id)
+        log = (
+            Log.objects
+            .select_related("service")
+            .get(pk=log_id)
+        )
 
     except ObjectDoesNotExist:
         logger.warning(
