@@ -37,7 +37,7 @@ class ServiceAdmin(admin.ModelAdmin):
 
     list_select_related = ('created_by',)
     list_filter = ('status', 'is_deleted', 'created_by')
-    search_fields = ('name', 'description', 'created_by__username')
+    search_fields = ('name', 'description', 'created_by__email')
     readonly_fields = ('created_at', 'updated_at', 'slug',)
 
     ordering = ('-created_at',)
@@ -65,7 +65,7 @@ class LogAdmin(admin.ModelAdmin):
     list_display = ('service','short_message', 'status', 'severity','status_code','response_time_ms',  'created_at')
     list_select_related = ('service',)
     list_filter = ('status', 'service', 'severity', 'created_at')
-    search_fields = ('service__name',)
+    search_fields = ('service__name','message')
     readonly_fields = ('created_at','service', 'status', 'severity','status_code','response_time_ms', 'formatted_metadata', 'message')
 
     list_per_page = 50
