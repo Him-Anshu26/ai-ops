@@ -1,4 +1,4 @@
-<![CDATA[<div align="center">
+<div align="center">
 
 # 🔮 AI Ops — Monitoring & Alerting Platform
 
@@ -46,7 +46,8 @@ Client → DRF API → Views → Service Layer → Models/Database
 
 ## ✨ Key Features
 
-### Authentication & Authorization
+### 🔐 Authentication & Authorization
+
 - **Custom User Model** — Email-based authentication (no username field)
 - **JWT Authentication** — Access tokens (15 min) and refresh tokens (7 days) via SimpleJWT
 - **Session-Based Token Management** — Each login creates a DB-tracked session with hashed refresh tokens
@@ -55,7 +56,8 @@ Client → DRF API → Views → Service Layer → Models/Database
 - **Password Reset** — Token-based password reset with hashed tokens (30-minute expiry), invalidates all sessions on reset
 - **Logout** — Soft session deactivation preserving audit history
 
-### Monitoring
+### 📊 Monitoring
+
 - **Log Ingestion API** — Create, list, and retrieve structured monitoring log entries
 - **Service Model** — Track registered services with status (`active`, `down`, `maintenance`), slug generation, and soft delete
 - **Structured Log Data** — Status, severity, HTTP status code, response time (ms), message, and JSON metadata per log entry
@@ -63,7 +65,8 @@ Client → DRF API → Views → Service Layer → Models/Database
 - **Advanced Filtering** — Filter by service, status, status code, time range, response time range, and message text
 - **Ordering** — Sort by `created_at` or `response_time_ms`
 
-### Alert Engine
+### 🚨 Alert Engine
+
 - **Automated Alert Generation** — Logs are evaluated against alert rules via Celery background tasks
 - **Error Detection** — Triggers on error status or HTTP 5xx status codes
 - **High Latency Detection** — Triggers when response time exceeds 1000ms threshold
@@ -75,26 +78,30 @@ Client → DRF API → Views → Service Layer → Models/Database
 - **Alert Lifecycle** — `open` → `acknowledged` → `resolved` workflow with resolution notes
 - **Immutable Incident Records** — Alerts are treated as append-only; no generic update/delete operations
 
-### Notification Service
+### 📨 Notification Service
+
 - **Email Notifications** — SMTP-based alert email delivery via Django's `send_mail`
 - **HTML Email Templates** — Professional HTML email template for alert notifications
 - **Notification Orchestration** — Provider-isolated dispatch with per-provider error handling
 - **Slack Placeholder** — Structured placeholder ready for Slack Incoming Webhooks integration
 - **Feature Flags** — `EMAIL_NOTIFICATIONS_ENABLED` and `SLACK_NOTIFICATIONS_ENABLED` toggle notifications
 
-### Cleanup Services
+### 🧹 Cleanup Services
+
 - **Accounts Cleanup** — Hourly scheduled task: expired email verification tokens, expired password reset tokens, inactive sessions (90-day retention)
 - **Monitoring Cleanup** — Daily scheduled task (3 AM): monitoring logs older than 120 days
 - **Alerts Cleanup** — Daily scheduled task (4 AM): resolved alerts older than 90 days
 
-### Background Processing
+### ⚙️ Background Processing
+
 - **Celery Workers** — Asynchronous task execution for alert processing and notification dispatch
 - **Celery Beat** — Periodic scheduling for all cleanup tasks
 - **Redis** — Message broker and result backend
 - **Retry Strategy** — Exponential backoff with jitter for transient failures (`ConnectionError`, `DatabaseError`), max 5 retries
 - **Transaction Safety** — `transaction.on_commit()` ensures Celery tasks run only after DB commits
 
-### API Quality
+### 📡 API Quality
+
 - **Swagger / OpenAPI 3.0** — Auto-generated interactive API documentation via drf-spectacular
 - **ReDoc** — Alternative API documentation viewer
 - **Request/Response Examples** — Rich OpenAPI examples for every endpoint
@@ -103,7 +110,8 @@ Client → DRF API → Views → Service Layer → Models/Database
 - **Rate Limiting** — IP-based rate limiting on all auth endpoints via django-ratelimit
 - **Anonymous Throttling** — Global 100 requests/day for unauthenticated requests
 
-### Security
+### 🛡️ Security
+
 - **Password Hashing** — Django's PBKDF2 password hashing
 - **Token Hashing** — SHA-256 hashing for verification, reset, and refresh tokens before DB storage
 - **HSTS / SSL** — Production settings enforce HTTPS redirect, HSTS preload, secure cookies
@@ -114,7 +122,8 @@ Client → DRF API → Views → Service Layer → Models/Database
 - **Split Settings** — Separate `dev.py` and `prod.py` configurations
 - **Environment Variables** — All secrets managed via `django-environ`
 
-### Admin Interface
+### 🎛️ Admin Interface
+
 - **Custom User Admin** — Search, filter, and manage users with verification status
 - **Service Admin** — Bulk status actions (active/down/maintenance), auto-assigned `created_by`
 - **Log Admin** — Read-only log viewer with formatted JSON metadata display, no add/edit/delete
@@ -291,18 +300,22 @@ ai_ops/
 - PostgreSQL 15+
 - Redis 7+
 
-### 1. Clone the Repository
+### Step 1 — Clone the Repository
 
 ```bash
 git clone https://github.com/your-username/ai-ops.git
 cd ai-ops
 ```
 
-### 2. Create Virtual Environment
+### Step 2 — Create a Virtual Environment
 
 ```bash
 python -m venv venv
+```
 
+**Activate the virtual environment:**
+
+```bash
 # Windows
 venv\Scripts\activate
 
@@ -310,13 +323,13 @@ venv\Scripts\activate
 source venv/bin/activate
 ```
 
-### 3. Install Dependencies
+### Step 3 — Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Configure Environment Variables
+### Step 4 — Configure Environment Variables
 
 ```bash
 cp .env.example .env.dev
@@ -324,19 +337,19 @@ cp .env.example .env.dev
 
 Edit `.env.dev` with your local configuration (see [Environment Variables](#-environment-variables) below).
 
-### 5. Run Database Migrations
+### Step 5 — Run Database Migrations
 
 ```bash
 python manage.py migrate
 ```
 
-### 6. Create Superuser
+### Step 6 — Create a Superuser
 
 ```bash
 python manage.py createsuperuser
 ```
 
-### 7. Start Redis
+### Step 7 — Start Redis
 
 ```bash
 # Docker
@@ -346,19 +359,19 @@ docker run -d -p 6379:6379 redis:latest
 redis-server
 ```
 
-### 8. Start Celery Worker
+### Step 8 — Start the Celery Worker
 
 ```bash
 celery -A ai_ops worker --loglevel=info
 ```
 
-### 9. Start Celery Beat
+### Step 9 — Start Celery Beat
 
 ```bash
 celery -A ai_ops beat --loglevel=info
 ```
 
-### 10. Run Development Server
+### Step 10 — Run the Development Server
 
 ```bash
 python manage.py runserver
@@ -371,7 +384,7 @@ The API is now available at `http://localhost:8000/api/v1/`.
 ## 🔐 Environment Variables
 
 | Variable | Required | Description | Default | Example |
-|----------|----------|-------------|---------|---------|
+|----------|:--------:|-------------|---------|---------|
 | `SECRET_KEY` | ✅ | Django secret key | — | `your-secret-key` |
 | `DB_NAME` | ✅ | PostgreSQL database name | `postgres` | `ai_ops_db` |
 | `DB_USER` | ✅ | PostgreSQL username | `postgres` | `postgres` |
@@ -543,10 +556,10 @@ The API is now available at `http://localhost:8000/api/v1/`.
 
 The `process_log_for_alerts_task` and `dispatch_alert_notifications_task` implement production-grade retry policies:
 
-- **Auto-retry on**: `ConnectionError`, `DatabaseError`
-- **Max retries**: 5
-- **Backoff**: Exponential with jitter
-- **Max backoff**: 300 seconds
+- **Auto-retry on** — `ConnectionError`, `DatabaseError`
+- **Max retries** — 5
+- **Backoff** — Exponential with jitter
+- **Max backoff** — 300 seconds
 
 ---
 
@@ -617,7 +630,7 @@ User ──┬── EmailVerificationToken (1:N)
 
 - **Composite indexes** on frequently queried field combinations
 - **Partial indexes** for active-only queries (e.g., `idx_active_alerts_per_service`)
-- **Unique constraints** with conditions to enforce business rules (e.g., one active alert per service+type+key)
+- **Unique constraints** with conditions to enforce business rules (e.g., one active alert per service + type + key)
 - **`select_related`** on all ViewSet querysets to prevent N+1 queries
 - **`select_for_update`** for row-level locking in concurrent alert processing
 
@@ -646,7 +659,7 @@ AI Ops uses Django's structured logging framework with a standardized format:
 - User registration, login, logout, email verification
 - Alert rule evaluation (matching rules, cooldown skips, create/update decisions)
 - Notification dispatch (email sent/failed, Slack placeholder)
-- Cleanup task execution (deleted token/session/log/alert counts)
+- Cleanup task execution (deleted token / session / log / alert counts)
 - Race condition recovery (IntegrityError fallbacks)
 - Celery task start/finish with log and alert IDs
 
@@ -658,11 +671,11 @@ AI Ops uses Django's structured logging framework with a standardized format:
 
 ```json
 {
-    "message": "Login successful.",
-    "tokens": {
-        "access": "eyJhbGciOiJIUzI1NiIs...",
-        "refresh": "eyJhbGciOiJIUzI1NiIs..."
-    }
+  "message": "Login successful.",
+  "tokens": {
+    "access": "eyJhbGciOiJIUzI1NiIs...",
+    "refresh": "eyJhbGciOiJIUzI1NiIs..."
+  }
 }
 ```
 
@@ -670,20 +683,20 @@ AI Ops uses Django's structured logging framework with a standardized format:
 
 ```json
 {
-    "next": "http://localhost:8000/api/v1/monitoring/logs/?cursor=cD0yMDI2...",
-    "previous": null,
-    "results": [
-        {
-            "id": 1,
-            "service": 1,
-            "service_name": "Auth Service",
-            "status": "error",
-            "status_code": 500,
-            "response_time_ms": 3200,
-            "message": "Database connection failed",
-            "created_at": "2026-07-20T10:30:00Z"
-        }
-    ]
+  "next": "http://localhost:8000/api/v1/monitoring/logs/?cursor=cD0yMDI2...",
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "service": 1,
+      "service_name": "Auth Service",
+      "status": "error",
+      "status_code": 500,
+      "response_time_ms": 3200,
+      "message": "Database connection failed",
+      "created_at": "2026-07-20T10:30:00Z"
+    }
+  ]
 }
 ```
 
@@ -691,12 +704,12 @@ AI Ops uses Django's structured logging framework with a standardized format:
 
 ```json
 {
-    "email": [
-        "A user with this email already exists."
-    ],
-    "password": [
-        "This password is too common."
-    ]
+  "email": [
+    "A user with this email already exists."
+  ],
+  "password": [
+    "This password is too common."
+  ]
 }
 ```
 
@@ -704,7 +717,7 @@ AI Ops uses Django's structured logging framework with a standardized format:
 
 ```json
 {
-    "detail": "Authentication credentials were not provided."
+  "detail": "Authentication credentials were not provided."
 }
 ```
 
@@ -721,7 +734,7 @@ AI Ops uses Django's structured logging framework with a standardized format:
 The following production practices are already implemented:
 
 | Practice | Status |
-|----------|--------|
+|----------|:------:|
 | Service layer architecture | ✅ |
 | Read/write serializer separation | ✅ |
 | Cursor-based pagination | ✅ |
@@ -817,4 +830,3 @@ License to be added.
 **Built with Django REST Framework** · **Designed for Production**
 
 </div>
-]]>
