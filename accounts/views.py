@@ -488,7 +488,7 @@ class GoogleLoginTestAPIView(APIView):
     def get(self, request):
         return render(
             request,
-            "accounts/google_login_test.html",
+            "google_login_test/google_test.html",
             {
                 "GOOGLE_CLIENT_ID": settings.GOOGLE_CLIENT_ID,
             },
