@@ -1,11 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Login Test</title>
 
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        #result {
+            margin-top: 30px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            background: #f5f5f5;
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow-x: auto;
+        }
+    </style>
 </head>
 <body>
+
+<h1>Google Login Test</h1>
 
 <div
     id="g_id_onload"
@@ -13,29 +38,81 @@
     data-callback="handleCredentialResponse">
 </div>
 
-<div class="g_id_signin"></div>
+<div
+    class="g_id_signin"
+    data-type="standard"
+    data-size="large"
+    data-theme="outline"
+    data-text="signin_with"
+    data-shape="rectangular">
+</div>
+
+<div id="result">
+Waiting for Google Login...
+</div>
 
 <script>
+
 function handleCredentialResponse(response) {
 
+
+    alert("CALLBACK EXECUTED");
+
+    console.log(response);
+
+    console.clear();
+
+    console.log("====================================");
+    console.log("GOOGLE ID TOKEN");
+    console.log("====================================");
+    console.log(response.credential);
+
+    document.getElementById("result").innerHTML =
+        "<h3>Sending token to Django...</h3>";
+
     fetch("/api/v1/accounts/google-login/", {
+
         method: "POST",
+
         headers: {
             "Content-Type": "application/json",
         },
+
         body: JSON.stringify({
             id_token: response.credential
         })
+
     })
-    .then(res => res.json())
-    .then(data => {
+
+    .then(async (res) => {
+
+        const data = await res.json();
+
+        console.log("====================================");
+        console.log("DJANGO RESPONSE");
+        console.log("====================================");
         console.log(data);
+
+        document.getElementById("result").innerHTML =
+            "<h2>Backend Response</h2><pre>" +
+            JSON.stringify(data, null, 4) +
+            "</pre>";
+
     })
-    .catch(err => {
-        console.error(err);
+
+    .catch((error) => {
+
+        console.error(error);
+
+        document.getElementById("result").innerHTML =
+            "<h2 style='color:red;'>Request Failed</h2><pre>" +
+            error +
+            "</pre>";
+
     });
 
 }
+
 </script>
 
 </body>
