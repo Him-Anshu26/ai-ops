@@ -303,7 +303,7 @@ ai_ops/
 ### Step 1 — Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/ai-ops.git
+git clone https://github.com/Him-Anshu26/ai-ops.git
 cd ai-ops
 ```
 
