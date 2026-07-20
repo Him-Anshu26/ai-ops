@@ -19,6 +19,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 env = environ.Env()
 
 
+settings_module = os.environ.get(
+    "DJANGO_SETTINGS_MODULE",
+    "ai_ops.settings.dev",
+)
+
+if settings_module.endswith(".prod"):
+    environ.Env.read_env(BASE_DIR / ".env.prod")
+else:
+    environ.Env.read_env(BASE_DIR / ".env.dev")
+
+
 
 
 
