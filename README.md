@@ -819,8 +819,8 @@ License to be added.
 | Field | Details |
 |-------|---------|
 | **Name** | Himanshu Shekhar Das |
-| **GitHub** | [@your-username](https://github.com/Him-Anshu26) |
-| **LinkedIn** | [Your LinkedIn](https://linkedin.com/in/himanshu-sh-das) |
+| **GitHub** | [@Him-Anshu26](https://github.com/Him-Anshu26) |
+| **LinkedIn** | [Himanshu Sh. Das](https://linkedin.com/in/himanshu-sh-das) |
 | **Email** | hsdhimanshu41@gmail.com |
 
 ---
