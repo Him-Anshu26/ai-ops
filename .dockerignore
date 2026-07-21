@@ -1,0 +1,101 @@
+# =============================================================================
+# .dockerignore — AI Ops (Django REST Framework)
+# =============================================================================
+# Optimized for production Docker builds. Excludes everything not required
+# to build and run the application, reducing image size and build context.
+# =============================================================================
+
+# Version Control
+.git
+.gitignore
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# Virtual Environments
+venv/
+.venv/
+env/
+
+# Environment Variable Files
+# Secrets must be injected via Docker secrets, env flags, or orchestration.
+# Never bake .env files into the image.
+.env
+.env.*
+!.env.example
+
+# IDE & Editor Configuration
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS-Generated Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# SQLite Databases (local development only)
+db.sqlite3
+db.sqlite3-journal
+
+# Celery Beat Schedule Files (runtime-generated)
+celerybeat-schedule
+celerybeat-schedule-shm
+celerybeat-schedule-wal
+celerybeat.pid
+
+# Log Files
+*.log
+logs/
+
+# Test & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+coverage.xml
+nosetests.xml
+
+# Type Checking & Linting Cache
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+
+# Build & Distribution Artifacts
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Documentation & Project Meta (not needed at runtime)
+README.md
+CHANGELOG.md
+CONTRIBUTING.md
+LICENSE
+docs/
+
+# Docker Files (avoid recursive build context)
+Dockerfile
+Dockerfile.*
+docker-compose*.yml
+docker-compose*.yaml
+.dockerignore
+
+# CI/CD Configuration
+.github/
+.gitlab-ci.yml
+.travis.yml
+Jenkinsfile
+
+# Media & Static Collected (generated at deploy time)
+media/
+staticfiles/
+
+# Agents & Local Tooling
+.agents/
