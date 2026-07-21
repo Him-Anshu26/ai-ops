@@ -818,10 +818,10 @@ License to be added.
 
 | Field | Details |
 |-------|---------|
-| **Name** | Your Name |
-| **GitHub** | [@your-username](https://github.com/your-username) |
-| **LinkedIn** | [Your LinkedIn](https://linkedin.com/in/your-profile) |
-| **Email** | your.email@example.com |
+| **Name** | Himanshu Shekhar Das |
+| **GitHub** | [@your-username](https://github.com/Him-Anshu26) |
+| **LinkedIn** | [Your LinkedIn](https://linkedin.com/in/himanshu-sh-das) |
+| **Email** | hsdhimanshu41@gmail.com |
 
 ---
 
