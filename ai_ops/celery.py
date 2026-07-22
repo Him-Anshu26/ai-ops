@@ -27,6 +27,8 @@ app.config_from_object(
     namespace="CELERY",
 )
 
+app.conf.broker_connection_retry_on_startup = True
+
 
 # Automatically discover tasks.py from all installed apps.
 #
