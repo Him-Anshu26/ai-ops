@@ -23,9 +23,14 @@ from drf_spectacular.views import (
     SpectacularRedocView,
 )
 
+from monitoring.views import HealthCheckAPIView
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # Project-level health endpoint.
+    path('api/v1/health/', HealthCheckAPIView.as_view(), name='health-check'),
 
     path(
         'api/v1/accounts/',
