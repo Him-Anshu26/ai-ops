@@ -32,7 +32,7 @@ from ai_ops.celery import app as celery_app
 logger = logging.getLogger(__name__)
 
 
-# ── Constants ────────────────────────────────────────────────────────────────
+# Constants
 
 # Captured once at import time.
 # Used to calculate server uptime for the health response.
@@ -52,7 +52,7 @@ _REDIS_SOCKET_TIMEOUT: int = 3
 _BROKER_CONNECTION_TIMEOUT: int = 3
 
 
-# ── Public API ───────────────────────────────────────────────────────────────
+# Public API
 
 def get_health_status() -> dict[str, Any]:
     """
@@ -88,7 +88,7 @@ def get_health_status() -> dict[str, Any]:
         return _fallback_response(check_start)
 
 
-# ── Private Health Checks ────────────────────────────────────────────────────
+# Private Health Checks
 
 def _check_application() -> dict[str, Any]:
     """
@@ -268,7 +268,7 @@ def _check_celery_beat() -> dict[str, Any]:
     }
 
 
-# ── Response Builder ─────────────────────────────────────────────────────────
+# Response Builder
 
 def _build_response(
     checks: dict[str, dict[str, Any]],
@@ -335,7 +335,7 @@ def _fallback_response(check_start: float) -> dict[str, Any]:
     }
 
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
+# Helpers
 
 def _get_api_version() -> str:
     """Read the API version from ``SPECTACULAR_SETTINGS``."""
