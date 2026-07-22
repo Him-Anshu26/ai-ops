@@ -258,9 +258,8 @@ EXPOSE 8000
 #   /api/v1/health/ — a lightweight, unauthenticated liveness probe
 #                     intended for orchestrators.
 # -----------------------------------------------------------------------------
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health/')" || exit 1
-
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+   CMD python -c "import sys, urllib.request; r=urllib.request.urlopen('http://localhost:8000/api/v1/health/'); sys.exit(0 if r.status==200 else 1)"
 
 # -----------------------------------------------------------------------------
 # Default Command

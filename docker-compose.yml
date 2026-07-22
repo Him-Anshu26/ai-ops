@@ -1,0 +1,204 @@
+# =============================================================================
+# Docker Compose — AI Ops (Django REST Framework)
+# =============================================================================
+# Production-ready Docker Compose configuration.
+#
+# Services:
+#   • Django (Gunicorn)
+#   • PostgreSQL
+#   • Redis
+#   • Celery Worker
+#   • Celery Beat
+#
+# Usage
+#
+#   docker compose up --build
+#   docker compose up -d
+#   docker compose down
+#   docker compose down -v
+#
+# Environment
+#
+# Copy:
+#
+#   .env.example
+#
+# to
+#
+#   .env.prod
+#
+# and update the values before running.
+# =============================================================================
+
+version: "3.9"
+
+# =============================================================================
+# Shared Application Configuration
+# =============================================================================
+
+x-app: &app
+  build:
+    context: .
+    dockerfile: Dockerfile
+
+  env_file:
+    - .env.prod
+
+  environment:
+    DJANGO_SETTINGS_MODULE: ai_ops.settings.prod
+
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+  networks:
+    - ai_ops_network
+
+  restart: unless-stopped
+
+  init: true
+
+
+# =============================================================================
+# Services
+# =============================================================================
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL
+  # ---------------------------------------------------------------------------
+
+  db:
+    container_name: ai_ops_db
+
+    image: postgres:16-alpine
+
+    env_file:
+      - .env.prod
+
+    environment:
+      POSTGRES_DB: ${DB_NAME:-ai_ops}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-ai_ops}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    networks:
+      - ai_ops_network
+
+    restart: unless-stopped
+
+
+  # ---------------------------------------------------------------------------
+  # Redis
+  # ---------------------------------------------------------------------------
+
+  redis:
+    container_name: ai_ops_redis
+
+    image: redis:7-alpine
+
+    ports:
+      - "6379:6379"
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+    networks:
+      - ai_ops_network
+
+    restart: unless-stopped
+
+
+  # ---------------------------------------------------------------------------
+  # Django (Gunicorn)
+  # ---------------------------------------------------------------------------
+
+  web:
+    <<: *app
+
+    container_name: ai_ops_web
+
+    ports:
+      - "8000:8000"
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8000/api/v1/health/"
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+
+  # ---------------------------------------------------------------------------
+  # Celery Worker
+  # ---------------------------------------------------------------------------
+
+  celery:
+    <<: *app
+
+    container_name: ai_ops_celery
+
+    command: celery -A ai_ops worker -l info
+
+    stop_grace_period: 30s
+
+
+  # ---------------------------------------------------------------------------
+  # Celery Beat
+  # ---------------------------------------------------------------------------
+
+  celery-beat:
+    <<: *app
+
+    container_name: ai_ops_celery_beat
+
+    command: celery -A ai_ops beat -l info
+
+    stop_grace_period: 30s
+
+
+# =============================================================================
+# Volumes
+# =============================================================================
+
+volumes:
+
+  postgres_data:
+    driver: local
+
+
+# =============================================================================
+# Networks
+# =============================================================================
+
+networks:
+
+  ai_ops_network:
+    driver: bridge
