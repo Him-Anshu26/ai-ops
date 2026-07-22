@@ -1,8 +1,11 @@
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework import mixins, viewsets
+# pyrefly: ignore [missing-import]
+from rest_framework import mixins, viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.filters import OrderingFilter
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 # from rest_framework.permissions import AllowAny
 
@@ -22,9 +25,51 @@ from monitoring.schemas.log_schema import (
     retrieve_log_schema,
 )
 
+from monitoring.schemas.health_schema import health_check_schema
+
 from monitoring.tasks import process_log_for_alerts_task
 
+from monitoring.services.health_service import get_health_status
+
 from django.db import transaction
+
+
+
+class HealthCheckAPIView(APIView):
+    """
+    Lightweight health-check endpoint for orchestrators.
+
+    Unauthenticated so Docker HEALTHCHECK, Kubernetes liveness
+    probes, and load balancer health checks can reach it without
+    credentials.
+
+    All logic lives in the health service — this view only
+    delegates and returns the response.
+    """
+
+    authentication_classes = []
+    permission_classes = []
+
+    @health_check_schema
+    def get(self, request):
+        """
+        GET /health/
+
+        Returns application health status.
+        """
+
+        health = get_health_status()
+
+        http_status = (
+            status.HTTP_200_OK
+            if health.get("status") == "healthy"
+            else status.HTTP_503_SERVICE_UNAVAILABLE
+        )
+
+        response = Response(health, status=http_status)
+        response["Cache-Control"] = "no-store"
+
+        return response
 
 
 
