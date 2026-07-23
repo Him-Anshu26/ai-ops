@@ -73,6 +73,42 @@ The following capabilities are implemented and operational:
 
 ---
 
+## 📚 Documentation
+
+The project includes comprehensive documentation resources:
+- **API Documentation**
+- **Swagger UI**
+- **ReDoc**
+- **OpenAPI Schema**
+- **Postman Collection**
+- **Postman Environment**
+- **Architecture Diagrams**
+
+Example documentation structure:
+```
+docs/
+├── architecture/
+├── postman/
+└── screenshots/
+```
+
+---
+
+## 🗂️ Documentation Assets
+
+| Asset | Location |
+|-------|----------|
+| Swagger UI | `/api/v1/docs/` |
+| ReDoc | `/api/v1/docs/redoc/` |
+| OpenAPI Schema | `/api/v1/schema/` |
+| Architecture | `docs/architecture` |
+| Screenshots | `docs/screenshots` |
+| Postman Collection | `docs/postman` |
+| Docker Compose | `docker-compose.dev.yml` |
+| Docker Production | `docker-compose.prod.yml` |
+
+---
+
 ## 🐳 Docker Support
 
 AI Ops can run entirely using Docker Compose — no local Python, PostgreSQL, or Redis installation required.
@@ -136,9 +172,40 @@ All infrastructure containers include production-ready health checks:
 
 Django and Celery services wait for `db` and `redis` to be healthy (`condition: service_healthy`) before starting.
 
+### Docker Features
+
+- **Dockerfile** — Multi-stage production image (if applicable) and non-root container support
+- **docker-compose.dev.yml** — Development stack with hot reloading
+- **docker-compose.prod.yml** — Production stack ready for deployment
+- **PostgreSQL** — Managed database service
+- **Redis** — In-memory caching and message broker
+- **Celery Worker** — Asynchronous task processing
+- **Celery Beat** — Scheduled background tasks
+- **Health Checks** — Production-ready container health monitoring
+- **Non-root container** — Enhances security
+- **Environment variable support** — Fully configurable via `.env` files
+
 ---
 
 ## ✨ Key Features
+
+### 🚀 API Features
+
+- ✔ Dockerized deployment
+- ✔ Health Monitoring
+- ✔ Swagger
+- ✔ ReDoc
+- ✔ OpenAPI
+- ✔ Postman Collection
+- ✔ Celery
+- ✔ Celery Beat
+- ✔ Redis
+- ✔ PostgreSQL
+- ✔ Docker Health Checks
+- ✔ Production Dockerfile
+- ✔ Development Compose
+- ✔ Production Compose
+- ✔ MIT License
 
 ### 🔐 Authentication & Authorization
 
@@ -248,6 +315,18 @@ Django and Celery services wait for `db` and `redis` to be healthy (`condition: 
 ---
 
 ## 🏗️ Architecture
+
+### Overall Architecture
+
+![Overall Architecture](docs/architecture/architecture.png)
+
+### Database Schema
+
+![Database Schema](docs/architecture/database-schema.png)
+
+### Request Flow Diagram
+
+![Request Flow](docs/architecture/request-flow.png)
 
 ### Request Flow
 
@@ -564,7 +643,47 @@ The API is now available at `http://localhost:8000/api/v1/`.
 
 ---
 
+## 📮 Postman
+
+You can quickly test the API by importing the provided Postman collection and environment.
+
+- **Collection**: `docs/postman/AI_Ops_API.postman_collection.json` (Contains every endpoint)
+- **Environment**: `docs/postman/AI_Ops_Environment.postman_environment.json` (Contains variables)
+
+Users only need to change the Base URL and update Tokens in the environment variables.
+
+---
+
+## 📸 Screenshots
+
+### Swagger API Documentation
+![Swagger Home](docs/screenshots/swagger-home.png)
+*Interactive API documentation powered by drf-spectacular.*
+
+### User Registration
+![Registration API](docs/screenshots/register-api.png)
+*Endpoint for registering new users with validation.*
+
+### User Login
+![Login API](docs/screenshots/login-api.png)
+*JWT-based authentication endpoint.*
+
+### Health Check
+![Health API](docs/screenshots/health-api.png)
+*System health monitoring endpoint.*
+
+### Docker Infrastructure
+![Docker Containers](docs/screenshots/docker-containers.png)
+*Containerized services running via Docker Compose.*
+
+---
+
 ## 📡 API Documentation
+
+The project provides comprehensive API documentation out of the box using:
+- **OpenAPI 3**
+- **Swagger UI**
+- **ReDoc**
 
 ### Interactive Documentation
 
