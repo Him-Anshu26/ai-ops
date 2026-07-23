@@ -661,7 +661,7 @@ Users only need to change the Base URL and update Tokens in the environment vari
 *Interactive API documentation powered by drf-spectacular.*
 
 ### User Registration
-![Registration API](docs/screenshots/register-api.png)
+![Registration API](docs/screenshots/register-user.png)
 *Endpoint for registering new users with validation.*
 
 ### User Login
