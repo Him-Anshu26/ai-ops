@@ -35,6 +35,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed container health status reporting — health endpoint returns HTTP 503 when any subsystem is unhealthy.
 - Improved Docker startup reliability — `depends_on` with `service_healthy` condition prevents premature service starts.
 
+### Documentation
+
+**Added**
+- Comprehensive architecture diagrams
+- Database schema documentation
+- Request flow diagram
+- Swagger screenshots
+- Docker screenshots
+- API documentation screenshots
+- Postman collection
+- Postman environment
+- Expanded README
+- Improved project documentation
+- Added MIT License documentation
+
+**Changed**
+- Updated README to document Docker support
+- Updated project structure
+- Improved documentation navigation
+- Improved setup instructions
+- Improved API documentation section
+
 ---
 
 ## [1.0.0] — 2026-07-20
