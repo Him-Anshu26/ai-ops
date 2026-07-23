@@ -130,6 +130,10 @@ services:
     ports:
       - "8000:8000"
 
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+
     healthcheck:
       test:
         [
@@ -166,11 +170,16 @@ services:
     stop_grace_period: 30s
 
 
+
 # Volumes
 volumes:
 
   postgres_data:
     driver: local
+
+  static_volume:
+
+  media_volume:
 
 
 # Networks
