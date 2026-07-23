@@ -386,20 +386,22 @@ ai_ops/
 │   │   └── auth_schema.py     # OpenAPI schema decorators
 │   └── urls.py                # Auth URL routes
 │
-├── monitoring/                # Service monitoring & log ingestion app
+├── monitoring/                # Service monitoring, log ingestion & health checks
 │   ├── models.py              # Service, Log models with indexes
-│   ├── views.py               # LogViewSet (create, list, retrieve)
+│   ├── views.py               # LogViewSet (create, list, retrieve), HealthCheckAPIView
 │   ├── serializers/
 │   │   └── log_serializer.py  # LogWriteSerializer, LogReadSerializer
 │   ├── services/
 │   │   ├── alert_service.py   # Alert rule engine & alert processing
-│   │   └── cleanup_service.py # Log retention cleanup
+│   │   ├── cleanup_service.py # Log retention cleanup
+│   │   └── health_service.py  # Health check orchestrator (app, DB, Redis, Celery, Beat)
 │   ├── filters.py             # Log filtering (status, service, time range, response time)
 │   ├── pagination.py          # LogCursorPagination
 │   ├── tasks.py               # Celery tasks (alert processing, log cleanup)
 │   ├── admin.py               # ServiceAdmin, LogAdmin (read-only)
 │   ├── schemas/
-│   │   └── log_schema.py      # OpenAPI schema decorators
+│   │   ├── log_schema.py      # OpenAPI schema decorators for logs
+│   │   └── health_schema.py   # OpenAPI schema decorators for health check
 │   └── urls.py                # Monitoring URL routes
 │
 ├── alerts/                    # Alert management & notification app
@@ -427,9 +429,16 @@ ai_ops/
 │   └── google_login_test/
 │       └── google_test.html   # Google OAuth test page
 │
+├── Dockerfile                 # Production-grade Docker image
+├── docker-compose.dev.yml     # Development Docker Compose stack
+├── docker-compose.prod.yml    # Production Docker Compose stack
+├── .dockerignore              # Docker build context exclusions
 ├── manage.py                  # Django management script
 ├── requirements.txt           # Python dependencies
 ├── .env.example               # Environment variable template
+├── .env.dev                   # Development environment variables (not committed)
+├── .env.prod                  # Production environment variables (not committed)
+├── LICENSE                    # MIT License
 └── .gitignore                 # Git ignore rules
 ```
 
@@ -903,14 +912,22 @@ The following production practices are already implemented:
 | Email notification system | ✅ |
 | HTML email templates | ✅ |
 | Custom Django admin interface | ✅ |
+| Dockerized development environment | ✅ |
+| Dockerized production environment | ✅ |
+| Production-grade Dockerfile | ✅ |
+| Docker health checks | ✅ |
+| Health check API endpoint | ✅ |
+| Gunicorn production server | ✅ |
 
 ---
 
 ## 🗺️ Roadmap
 
-The following items have **not yet been implemented** and represent potential future improvements:
+The following items track feature progress and future improvements:
 
-- [ ] **Docker & Docker Compose** — Containerized development and deployment
+- [x] **Docker & Docker Compose** — Containerized development and deployment
+- [x] **Gunicorn** — Production WSGI server configuration
+- [x] **Health Check Endpoint** — Liveness and readiness probes for orchestration
 - [ ] **CI/CD Pipeline** — GitHub Actions or GitLab CI for automated testing and deployment
 - [ ] **Automated Test Suite** — Unit tests, integration tests, and API tests
 - [ ] **Slack Integration** — Complete Slack Incoming Webhooks notification delivery
@@ -919,10 +936,12 @@ The following items have **not yet been implemented** and represent potential fu
 - [ ] **RBAC / Multi-Tenancy** — Organization-scoped access control
 - [ ] **Downtime Detection** — Heartbeat-based service downtime alerting
 - [ ] **Full-Text Search** — PostgreSQL trigram or Elasticsearch for log/alert search
-- [ ] **Gunicorn / Uvicorn** — Production WSGI/ASGI server configuration
 - [ ] **Static File Serving** — WhiteNoise or CDN integration
-- [ ] **Health Check Endpoints** — Liveness and readiness probes for orchestration
 - [ ] **Metrics Export** — Prometheus or StatsD metrics integration
+- [ ] **Kubernetes Deployment** — Container orchestration for production
+- [ ] **Prometheus & Grafana** — Metrics collection and visualization
+- [ ] **OpenTelemetry** — Distributed tracing and observability
+- [ ] **Monitoring Dashboard** — Real-time service health visualization
 
 ---
 
@@ -953,7 +972,9 @@ Contributions are welcome! Please follow these guidelines:
 
 ## 📄 License
 
-License to be added.
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+
+Copyright © 2026 Himanshu Shekhar Das
 
 ---
 
