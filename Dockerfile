@@ -245,22 +245,6 @@ USER appuser
 EXPOSE 8000
 
 
-# -----------------------------------------------------------------------------
-# Health Check
-# -----------------------------------------------------------------------------
-# Periodically verify the application is responsive.
-# curl is not available in slim images, so we use Python's urllib.
-# Docker marks the container as "unhealthy" if this command fails
-# 3 consecutive times (retries), enabling orchestrators like
-# Docker Compose or Kubernetes to restart it automatically.
-#
-# We hit a dedicated health endpoint rather than Swagger UI:
-#   /api/v1/docs/  — may be disabled or behind auth in production.
-#   /api/v1/health/ — a lightweight, unauthenticated liveness probe
-#                     intended for orchestrators.
-# -----------------------------------------------------------------------------
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-   CMD python -c "import sys, urllib.request; r=urllib.request.urlopen('http://localhost:8000/api/v1/health/'); sys.exit(0 if r.status==200 else 1)"
 
 # -----------------------------------------------------------------------------
 # Default Command
