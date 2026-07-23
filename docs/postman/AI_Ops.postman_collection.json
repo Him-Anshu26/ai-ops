@@ -1,0 +1,3256 @@
+{
+  "info": {
+    "_postman_id": "84b5ad7c-b220-404c-b427-f26b69e36a64",
+    "name": "AI_Ops",
+    "description": "### Welcome to Postman! This is your first collection. \n\nCollections are your starting point for building and testing APIs. You can use this one to:\n\n• Group related requests\n• Test your API in real-world scenarios\n• Document and share your requests\n\nUpdate the name and overview whenever you’re ready to make it yours.\n\n[Learn more about Postman Collections.](https://learning.postman.com/docs/collections/collections-overview/)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54742511",
+    "_collection_link": "https://go.postman.co/collection/54742511-84b5ad7c-b220-404c-b427-f26b69e36a64?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "AI_Ops",
+      "item": [
+        {
+          "name": "Auth APIs",
+          "item": [
+            {
+              "name": "Register : Success",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"nickrehan07@gmail.com\",\r\n    \"password\": \"StrongPassword123@\",\r\n    \"first_name\": \"Nick\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/accounts/register/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "register",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Verify Email : Success",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/accounts/verify-email/?token=kZUq-9tmmM_bGp8QtNXMo-_9c0nHijWtoCqgKRxoEYg",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "verify-email",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "token",
+                      "value": "kZUq-9tmmM_bGp8QtNXMo-_9c0nHijWtoCqgKRxoEYg"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Verify Email : Same Token / Invalid Token",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/accounts/verify-email/?token=kZUq-9tmmM_bGp8QtNXMo-_9c0nHijWtoCqgKRxoEYg",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "verify-email",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "token",
+                      "value": "kZUq-9tmmM_bGp8QtNXMo-_9c0nHijWtoCqgKRxoEYg"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Register Again : Error - User Exists",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"nickrehan07@gmail.com\",\r\n    \"password\": \"StrongPassword123@\",\r\n    \"first_name\": \"Nick\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/accounts/register/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "register",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Resend Verify Email : Already Verified",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"nickrehan07@gmail.com\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/accounts/resend-verification/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "resend-verification",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Login User : Success",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"nickrehan07@gmail.com\",\r\n    \"password\": \"StrongPassword123@\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/accounts/login/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "login",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Login User : Invalid Credentials",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"nickrehan07@gmail.com\",\r\n    \"password\": \"StrongPassword23@\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/accounts/login/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "login",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Refresh Token : Get New Access Token",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"refresh\":\"{{json_web_token_143n}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/accounts/refresh/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "refresh",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Refresh Token : Give Wrong Refresh Token",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"refresh\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3OTgwMDQ2OSwiaWF0IjoxNzc5MTk1NjY5LCJqdGkiOiJlY2Y0MzU0ZjYzNGQ0NTM2OTI5NGI5MzZlZDA1OWJlNCIsInVzZXJfaWQiOjMxLCJzZXNzaW9uX2lkIjoiamtDZktROEpBMzNUUFc3OEcwdjV0MzAtalJVUGxka21DemlfWnNtMlp3YyJ9.wYPfcOPFGiG277xagga_wcgdGMT9zP4cUNng\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/accounts/refresh/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "refresh",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Logout : Success",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{auth_secret_0j65}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/accounts/logout/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "logout",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Session Expired : Old Refresh Token Check",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"refresh\": \"{{json_web_token_0j65}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/accounts/refresh/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "refresh",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Reset Password Request : Sent",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"nickrehan07@gmail.com\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/accounts/password-reset/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "password-reset",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Password Reset Confirm : Success",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"token\": \"a2cxcjEaeNRvSWLqUkMB4gqvbz2AR1CQOoDZUp7nQuo\",\r\n    \"new_password\": \"Nick@587rehan\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/accounts/password-reset-confirm/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "password-reset-confirm",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Login Old Password : Invalid Credentials / Error",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"nickrehan07@gmail.com\",\r\n    \"password\": \"StrongPassword123@\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/accounts/login/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "login",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Login New Password : Success",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"nickrehan07@gmail.com\",\r\n    \"password\": \"Nick@587rehan\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/accounts/login/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "login",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Register : Same Email : User Exists",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"nickrehan07@gmail.com\",\r\n    \"password\": \"StrongPassword123@\",\r\n    \"first_name\": \"Nick\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/accounts/register/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "register",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Google OAuth Login : Redirect Success",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/accounts/google/login/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "accounts",
+                    "google",
+                    "login",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "OAuth APIs",
+          "item": [
+            {
+              "name": "Google-Login : Get Google ID Token",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"id_token\":\"{{supabase_service_role_api_key_1bke}}BIfSM0vTobIN6xlsyEBicTm0kGcrP0BLGpCpUonTsblSkiBHrea9oiMqYAmunIos9Av3t0IjhNJiFTAOx6NrBNnkqU2ZkWMiGQ5xWKBiBwqSYSdL7u4FI6a58hNTvc_eVK30tkhfL7FmP-m0T6N5d4Dn99U_Vpd2757ZN9aaV7tCDMkXF9MsQc8vuXz6W8WlNwY-6ZUQ9Cu2QQJyLNQ39EozuPrzzgy5FNWDre7Y6wCTf2WMJn9FNJXhMw\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/accounts/google-login/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "google-login",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Refresh Test",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"refresh\": \"{{supabase_service_role_api_key_04dn}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/accounts/refresh/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "refresh",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "LogOut Test",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{supabase_service_role_api_key_0vj6}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/accounts/logout/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "logout",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Refresh Test After Logout",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"refresh\": \"{{json_web_token_04dn}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/accounts/refresh/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "refresh",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Logs APIs",
+          "item": [
+            {
+              "name": "Create Log : Success",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 1,\r\n    \"status\": \"error\",\r\n    \"status_code\": 500,\r\n    \"response_time_ms\": 1200,\r\n    \"message\": \"Internal server error\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Log : Error",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"service\": 1,\r\n  \"status\": \"error\",\r\n  \"status_code\": 500,\r\n  \"response_time_ms\": 3000\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Log : Invalid Status",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 1,\r\n    \"status\": \"error\",\r\n    \"status_code\": 200,\r\n    \"response_time_ms\": 500,\r\n    \"message\": \"Should fail\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Log : Negative Response Time",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"service\": 1,\r\n  \"status\": \"error\",\r\n  \"status_code\": 500,\r\n  \"response_time_ms\": -50\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Log : Missing Msg",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 1,\r\n    \"status\": \"success\",\r\n    \"status_code\": 200,\r\n    \"response_time_ms\": 90\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Log : Status Null",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 1,\r\n    \"status\": \"success\",\r\n    \"response_time_ms\": 100\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Logs : Success",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Log : Single Retrieve",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/3",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    "3"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Logs : Fail Non Exists",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/63",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    "63"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Log : Filtering",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/?service=1",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "service",
+                      "value": "1"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Log : Filtering Non Exists",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/?service=63",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "service",
+                      "value": "63"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Filter : By Status",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/?status=error",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "error"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Filter : Status Code",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/?status_code=500",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "status_code",
+                      "value": "500"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Filter : Time Range",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/?created_after=2026-01-01T00:00:00Z",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "created_after",
+                      "value": "2026-01-01T00:00:00Z"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Filter : Min Response Time",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/?min_response_time=1000",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "min_response_time",
+                      "value": "1000"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Filter : Max Response Time Copy",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/?max_response_time=500",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "max_response_time",
+                      "value": "500"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Search : By Msg",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/?message=timeout",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "message",
+                      "value": "timeout"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Ordering : Created Time Ascending",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/?ordering=created_at",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "ordering",
+                      "value": "created_at"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Ordering : Created Time Descending",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/?ordering=-created_at",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "ordering",
+                      "value": "-created_at"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Ordering : Response Time",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/?ordering=-response_time_ms",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "ordering",
+                      "value": "-response_time_ms"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Ordering : Invalid",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/?ordering=random_field",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "ordering",
+                      "value": "random_field"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Filter + Order",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/?status=error&service=1&ordering=-response_time_ms",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "error"
+                    },
+                    {
+                      "key": "service",
+                      "value": "1"
+                    },
+                    {
+                      "key": "ordering",
+                      "value": "-response_time_ms"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Log : Success Trigger Alert",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 4,\r\n    \"status\": \"error\",\r\n    \"status_code\": 500,\r\n    \"response_time_ms\": 150,\r\n    \"message\": \"Database connection failed testing alert trigger\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Log : Same Log Trigger Count Increases",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 4,\r\n    \"status\": \"error\",\r\n    \"status_code\": 500,\r\n    \"response_time_ms\": 150,\r\n    \"message\": \"Database connection failed testing alert trigger\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Log : High Latency Check",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 4,\r\n    \"status\": \"success\",\r\n    \"status_code\": 200,\r\n    \"response_time_ms\": 4000,\r\n    \"message\": \"Slow endpoint\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Log : Cooldown : Same Log Within 30sec",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 4,\r\n    \"status\": \"error\",\r\n    \"status_code\": 503,\r\n    \"response_time_ms\": 200,\r\n    \"message\": \"Critical Alert\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Alerts APIs",
+          "item": [
+            {
+              "name": "Create Alert : Success",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 1,\r\n    \"alert_type\": \"error\",\r\n    \"alert_key\": \"error:1\",\r\n    \"severity\": \"high\",\r\n    \"status\": \"open\",\r\n    \"message\": \"Database connection failed\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Alert : Missing Service",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"alert_type\": \"error\",\r\n    \"alert_key\": \"error:1\",\r\n    \"severity\": \"high\",\r\n    \"status\": \"open\",\r\n    \"message\": \"Database connection failed\"\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Alert : Invalid Service ID",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 99999,\r\n    \"alert_type\": \"error\",\r\n    \"alert_key\": \"error:1\",\r\n    \"severity\": \"high\",\r\n    \"status\": \"open\",\r\n    \"message\": \"Database connection failed\"\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Alert : Invalid Alert Type",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 1,\r\n    \"alert_type\": \"crash\",\r\n    \"alert_key\": \"error:1\",\r\n    \"severity\": \"high\",\r\n    \"status\": \"open\",\r\n    \"message\": \"Database connection failed\"\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Alert : Invalid Severity",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 1,\r\n    \"alert_type\": \"error\",\r\n    \"alert_key\": \"error:1\",\r\n    \"severity\": \"super_critical\",\r\n    \"status\": \"open\",\r\n    \"message\": \"Database connection failed\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Alert : Invalid Status",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 1,\r\n    \"alert_type\": \"error\",\r\n    \"alert_key\": \"error:1\",\r\n    \"severity\": \"high\",\r\n    \"status\": \"active\",\r\n    \"message\": \"Database connection failed\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Alert : Empty Alert Key",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 1,\r\n    \"alert_type\": \"error\",\r\n    \"alert_key\": \"\",\r\n    \"severity\": \"high\",\r\n    \"status\": \"open\",\r\n    \"message\": \"Database connection failed\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Alert : Invalid Alert Key Format",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 1,\r\n    \"alert_type\": \"error\",\r\n    \"alert_key\": \"randomkey\",\r\n    \"severity\": \"high\",\r\n    \"status\": \"open\",\r\n    \"message\": \"Database connection failed\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Alert : Empty Message Success",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 2,\r\n    \"alert_type\": \"error\",\r\n    \"alert_key\": \"error:1\",\r\n    \"severity\": \"high\",\r\n    \"status\": \"open\",\r\n    \"message\": \"\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Alert : Null Message Success",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 3,\r\n    \"alert_type\": \"error\",\r\n    \"alert_key\": \"error:1\",\r\n    \"severity\": \"high\",\r\n    \"status\": \"open\",\r\n    \"message\": \"null\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Alert : Duplicate Alert Fail",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 1,\r\n    \"alert_type\": \"error\",\r\n    \"alert_key\": \"error:2\",\r\n    \"severity\": \"high\",\r\n    \"status\": \"open\",\r\n    \"message\": \"Database connection failed\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Alert : Same Service Diff Alert Key Success",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 1,\r\n    \"alert_type\": \"error\",\r\n    \"alert_key\": \"error:1\",\r\n    \"severity\": \"high\",\r\n    \"status\": \"open\",\r\n    \"message\": \"Database connection failed\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Alert : Same Service Diff Alert Type Success",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 1,\r\n    \"alert_type\": \"downtime\",\r\n    \"alert_key\": \"downtime:2\",\r\n    \"severity\": \"critical\",\r\n    \"status\": \"open\",\r\n    \"message\": \"Service unavailable\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Alerts : Success",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 1,\r\n    \"alert_type\": \"crash\",\r\n    \"alert_key\": \"error:1\",\r\n    \"severity\": \"high\",\r\n    \"status\": \"open\",\r\n    \"message\": \"Database connection failed\"\r\n}\r\n"
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Retrieve Alerts : Success",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 1,\r\n    \"alert_type\": \"crash\",\r\n    \"alert_key\": \"error:1\",\r\n    \"severity\": \"high\",\r\n    \"status\": \"open\",\r\n    \"message\": \"Database connection failed\"\r\n}\r\n"
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/2",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    "2"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Retrieve Alerts : Invalid ID",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 1,\r\n    \"alert_type\": \"crash\",\r\n    \"alert_key\": \"error:1\",\r\n    \"severity\": \"high\",\r\n    \"status\": \"open\",\r\n    \"message\": \"Database connection failed\"\r\n}\r\n"
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/92",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    "92"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Filter By Service",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/?service=1",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "service",
+                      "value": "1"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Filter By Severity",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/?severity=high",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "severity",
+                      "value": "high"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Filter By Status",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/?status=open",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "open"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Filter By Alert Type",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/?alert_type=error",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "alert_type",
+                      "value": "error"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Search By Database",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/?message=database",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "message",
+                      "value": "database"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Filter By Created After",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/?created_after=2026-06-01",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "created_after",
+                      "value": "2026-06-01"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Filter By Created Before",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/?created_before=2026-06-30",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "created_before",
+                      "value": "2026-06-30"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Order By Created At Asc",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/?ordering=created_at",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "ordering",
+                      "value": "created_at"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Order By Created At Dsc",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/?ordering=-created_at",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "ordering",
+                      "value": "-created_at"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Order By Severity",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/?ordering=severity",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "ordering",
+                      "value": "severity"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Order By Trigger Count",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/?page_size=2",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "page_size",
+                      "value": "2"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Page Size",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/?ordering=trigger_count",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "ordering",
+                      "value": "trigger_count"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Cursor Pagination",
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/?cursor=cD0yMDI2LTA2LTA4KzA3JTNBMDUlM0ExNy4yNDc5OTIlMkIwMCUzQTAw&page_size=2",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "cursor",
+                      "value": "cD0yMDI2LTA2LTA4KzA3JTNBMDUlM0ExNy4yNDc5OTIlMkIwMCUzQTAw"
+                    },
+                    {
+                      "key": "page_size",
+                      "value": "2"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Resolved At",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"status\": \"resolved\",\r\n    \"resolution_note\": \"Issue fixed after DB restart.\"\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/2/resolve/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    "2",
+                    "resolve",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Resolved At : Invalid Status",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"status\": \"open\",\r\n    \"resolution_note\": \"Issue fixed after DB restart.\"\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/5/resolve/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    "5",
+                    "resolve",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Resolved At : Missing Resolution Note",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"status\": \"resolved\"\r\n    \r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/6/resolve/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    "6",
+                    "resolve",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Restricted Method Test",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/1/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    "1",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Alerts : Checking Alerts For Log Trigger",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 1,\r\n    \"alert_type\": \"crash\",\r\n    \"alert_key\": \"error:1\",\r\n    \"severity\": \"high\",\r\n    \"status\": \"open\",\r\n    \"message\": \"Database connection failed\"\r\n}\r\n"
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/alerts/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Logs API For Celery Testing",
+          "item": [
+            {
+              "name": "Create Log : Success",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 3,\r\n    \"status\": \"error\",\r\n    \"status_code\": 500,\r\n    \"response_time_ms\": 1200,\r\n    \"message\": \"Internal server error\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Log : Multi Alert",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 1,\r\n    \"status\": \"error\",\r\n    \"status_code\": 503,\r\n    \"response_time_ms\": 6000,\r\n    \"message\": \"Service unavailable\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://127.0.0.1:8000/api/v1/monitoring/logs/",
+                  "protocol": "http",
+                  "host": [
+                    "127",
+                    "0",
+                    "0",
+                    "1"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "API Test : Using Docker",
+          "item": [
+            {
+              "name": "Register User",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"johnny@example.com\",\r\n    \"username\": \"johnny\",\r\n    \"password\": \"Password@123\",\r\n    \"confirm_password\": \"Password@123\",\r\n    \"first_name\": \"John\",\r\n    \"last_name\": \"Doe\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8000/api/v1/accounts/register/",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "register",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Verify Email",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8000/api/v1/accounts/verify-email/?token=g2-TKN59OLQ2o_U8KQo85fw4rbJ9jTcsHTFpkKdCD1g",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "verify-email",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "token",
+                      "value": "g2-TKN59OLQ2o_U8KQo85fw4rbJ9jTcsHTFpkKdCD1g"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Login User",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"john@example.com\",\r\n    \"password\": \"NewPassword@123\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8000/api/v1/accounts/login/",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "login",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "New Access Token",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"refresh\":\"{{json_web_token_0yvn}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8000/api/v1/accounts/refresh/",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "refresh",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "LogOut",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_0xft}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8000/api/v1/accounts/logout/",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "logout",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Password Reset",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\":\"john@example.com\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8000/api/v1/accounts/password-reset/",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "password-reset",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Password Reset Confirm",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"token\":\"LSUekq7Zp-H4ue9mbqGOmxCZcu7uI6eTWr5QqEl8zRM\",\r\n    \"new_password\":\"NewPassword@123\",\r\n    \"confirm_password\":\"NewPassword@123\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8000/api/v1/accounts/password-reset-confirm/",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "accounts",
+                    "password-reset-confirm",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create A Log",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_0eka}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"service\": 1,\r\n    \"service_name\": \"API\",\r\n    \"level\": \"ERROR\",\r\n    \"message\": \"Database timeout occurred\",\r\n    \"status\": \"error\",\r\n    \"status_code\": 500,\r\n    \"response_time_ms\": 1800\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8000/api/v1/monitoring/logs/",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "monitoring",
+                    "logs",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Alerts",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{json_web_token_0eka}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8000/api/v1/alerts/",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8000",
+                  "path": [
+                    "api",
+                    "v1",
+                    "alerts",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "supabase_service_role_api_key_10wm",
+      "secret": true
+    },
+    {
+      "key": "supabase_service_role_api_key_0ea1",
+      "secret": true
+    },
+    {
+      "key": "supabase_service_role_api_key_0wjg",
+      "secret": true
+    },
+    {
+      "key": "auth_secret_0j65",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_0j65",
+      "secret": true
+    },
+    {
+      "key": "supabase_service_role_api_key_1bke",
+      "secret": true
+    },
+    {
+      "key": "supabase_service_role_api_key_04dn",
+      "secret": true
+    },
+    {
+      "key": "supabase_service_role_api_key_0vj6",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_04dn",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_0yvn",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_0xft",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_0eka",
+      "secret": true
+    }
+  ]
+}

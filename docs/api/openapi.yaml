@@ -1,0 +1,1119 @@
+openapi: 3.0.3
+info:
+  title: AI Ops Monitoring API
+  version: 1.0.0
+  description: 'Production-grade monitoring and alerting platform API. Provides log
+    ingestion, alert management, filtering, pagination, and monitoring operations.Features:
+    - Log ingestion - Alert generation - Alert lifecycle management - Filtering -
+    Cursor pagination - Incident resolution workflows'
+paths:
+  /api/v1/accounts/google-login/:
+    post:
+      operationId: accounts_google_login_create
+      description: Authenticate user using a Google ID token and issue internal JWT
+        tokens.
+      summary: Google login
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoogleLogin'
+            examples:
+              GoogleLoginRequest:
+                value:
+                  id_token: google_id_token
+                summary: Google Login Request
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GoogleLogin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GoogleLogin'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              examples:
+                GoogleLoginSuccess:
+                  value:
+                    message: Login successful.
+                    tokens:
+                      access: jwt_access_token
+                      refresh: jwt_refresh_token
+                  summary: Google Login Success
+          description: ''
+  /api/v1/accounts/google-test/:
+    get:
+      operationId: accounts_google_test_retrieve
+      tags:
+      - accounts
+      responses:
+        '200':
+          description: No response body
+  /api/v1/accounts/login/:
+    post:
+      operationId: accounts_login_create
+      description: Authenticate user credentials and issue access and refresh tokens.
+      summary: Login user
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+            examples:
+              LoginRequest:
+                value:
+                  email: john@example.com
+                  password: StrongPassword123!
+                summary: Login Request
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Login'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              examples:
+                LoginSuccess:
+                  value:
+                    message: Login successful.
+                    tokens:
+                      access: jwt_access_token
+                      refresh: jwt_refresh_token
+                  summary: Login Success
+          description: ''
+  /api/v1/accounts/logout/:
+    post:
+      operationId: accounts_logout_create
+      description: Invalidate the current session.
+      summary: Logout user
+      tags:
+      - Authentication
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                LogoutSuccess:
+                  value:
+                    message: Logged out successfully.
+                  summary: Logout Success
+          description: ''
+  /api/v1/accounts/password-reset/:
+    post:
+      operationId: accounts_password_reset_create
+      description: Send password reset email to the user.
+      summary: Request password reset
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Email'
+            examples:
+              PasswordResetRequest:
+                value:
+                  email: john@example.com
+                summary: Password Reset Request
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Email'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Email'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                PasswordResetEmailSent:
+                  value:
+                    message: Password reset email sent.
+                  summary: Password Reset Email Sent
+          description: ''
+  /api/v1/accounts/password-reset-confirm/:
+    post:
+      operationId: accounts_password_reset_confirm_create
+      description: Reset password using a valid password reset token.
+      summary: Confirm password reset
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+            examples:
+              PasswordResetConfirm:
+                value:
+                  token: reset_token
+                  new_password: NewPassword123!
+                summary: Password Reset Confirm
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                PasswordResetSuccess:
+                  value:
+                    message: Password reset successful.
+                  summary: Password Reset Success
+          description: ''
+  /api/v1/accounts/refresh/:
+    post:
+      operationId: accounts_refresh_create
+      description: Generate a new access token using a valid refresh token.
+      summary: Refresh access token
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshToken'
+            examples:
+              RefreshRequest:
+                value:
+                  refresh: jwt_refresh_token
+                summary: Refresh Request
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RefreshToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RefreshToken'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshResponse'
+              examples:
+                RefreshSuccess:
+                  value:
+                    access: new_access_token
+                  summary: Refresh Success
+          description: ''
+  /api/v1/accounts/register/:
+    post:
+      operationId: accounts_register_create
+      description: Create a new user account and send an email verification link.
+      summary: Register user
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+            examples:
+              RegisterRequest:
+                value:
+                  email: john@example.com
+                  password: StrongPassword123!
+                  first_name: John
+                summary: Register Request
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Register'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                RegisterSuccess:
+                  value:
+                    message: User registered successfully. Please verify your email.
+                  summary: Register Success
+          description: ''
+  /api/v1/accounts/resend-verification/:
+    post:
+      operationId: accounts_resend_verification_create
+      description: Resend email verification link for unverified users.
+      summary: Resend verification email
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Email'
+            examples:
+              ResendVerificationRequest:
+                value:
+                  email: john@example.com
+                summary: Resend Verification Request
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Email'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Email'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                ResendVerificationSuccess:
+                  value:
+                    message: Verification email sent.
+                  summary: Resend Verification Success
+          description: ''
+  /api/v1/accounts/verify-email/:
+    get:
+      operationId: accounts_verify_email_retrieve
+      description: Verify user email using the verification token.
+      summary: Verify email
+      parameters:
+      - in: query
+        name: token
+        schema:
+          type: string
+        description: Email verification token.
+        required: true
+      tags:
+      - Authentication
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                VerifyEmailSuccess:
+                  value:
+                    message: Email verified successfully.
+                  summary: Verify Email Success
+          description: ''
+  /api/v1/alerts/:
+    get:
+      operationId: alerts_list
+      description: Retrieve paginated alerts with filtering and ordering support.
+      summary: List alerts
+      parameters:
+      - in: query
+        name: alert_type
+        schema:
+          type: string
+        description: Filter alerts by alert type.
+      - in: query
+        name: created_after
+        schema:
+          type: string
+        description: Return alerts created after this datetime.
+      - in: query
+        name: created_before
+        schema:
+          type: string
+        description: Return alerts created before this datetime.
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: last_triggered_after
+        schema:
+          type: string
+        description: Return alerts triggered after this datetime.
+      - in: query
+        name: last_triggered_before
+        schema:
+          type: string
+        description: Return alerts triggered before this datetime.
+      - in: query
+        name: max_trigger_count
+        schema:
+          type: integer
+      - in: query
+        name: message
+        schema:
+          type: string
+      - in: query
+        name: min_trigger_count
+        schema:
+          type: integer
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: Order results by created_at, severity, trigger_count, or last_triggered_at.
+          Use "-" for descending order.
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: service
+        schema:
+          type: integer
+        description: Filter alerts by service ID.
+      - in: query
+        name: severity
+        schema:
+          type: string
+        description: Filter alerts by severity.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Filter alerts by alert status.
+      tags:
+      - Alerts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAlertReadList'
+          description: ''
+    post:
+      operationId: alerts_create
+      description: Create a new alert. Currently used for testing and QA workflows.
+        In production alerts should be generated by the alert engine.
+      summary: Create alert
+      tags:
+      - Alerts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlertWrite'
+            examples:
+              ErrorAlertExample:
+                value:
+                  service: 1
+                  alert_type: error
+                  alert_key: error:1
+                  severity: high
+                  status: open
+                  message: Database connection failed
+                summary: Error Alert Example
+                description: Database error alert.
+              DowntimeAlertExample:
+                value:
+                  service: 1
+                  alert_type: downtime
+                  alert_key: downtime:1
+                  severity: critical
+                  status: open
+                  message: Service is unavailable
+                summary: Downtime Alert Example
+                description: Service downtime alert.
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AlertWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AlertWrite'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertRead'
+          description: ''
+  /api/v1/alerts/{id}/:
+    get:
+      operationId: alerts_retrieve
+      description: Retrieve a single alert by ID.
+      summary: Retrieve single alert
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this alert.
+        required: true
+      tags:
+      - Alerts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertRead'
+              examples:
+                SingleAlertResponse:
+                  value:
+                    id: 1
+                    service: 1
+                    service_name: Auth Service
+                    alert_type: error
+                    message: Database connection failed
+                    severity: high
+                    status: open
+                    trigger_count: 3
+                    created_at: '2026-06-01T10:00:00Z'
+                    last_triggered_at: '2026-06-01T10:15:00Z'
+                    resolved_at: null
+                  summary: Single Alert Response
+                  description: Example alert response.
+          description: ''
+  /api/v1/alerts/{id}/resolve/:
+    post:
+      operationId: alerts_resolve_create
+      description: Resolve an existing alert. This is a workflow action and not a
+        generic update operation.
+      summary: Resolve alert
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this alert.
+        required: true
+      tags:
+      - Alerts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlertResolve'
+            examples:
+              ResolveAlertRequest:
+                value:
+                  status: resolved
+                  resolution_note: Issue fixed after database restart.
+                summary: Resolve Alert Request
+                description: Resolve an alert with a resolution note.
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AlertResolve'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AlertResolve'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertRead'
+              examples:
+                ResolvedAlertResponse:
+                  value:
+                    id: 1
+                    service: 1
+                    service_name: Auth Service
+                    alert_type: error
+                    message: Database connection failed
+                    severity: high
+                    status: resolved
+                    trigger_count: 3
+                    created_at: '2026-06-01T10:00:00Z'
+                    last_triggered_at: '2026-06-01T10:15:00Z'
+                    resolved_at: '2026-06-01T10:20:00Z'
+                    resolution_note: Issue fixed after database restart.
+                  summary: Resolved Alert Response
+                  description: Successfully resolved alert.
+          description: ''
+  /api/v1/health/:
+    get:
+      operationId: health_retrieve
+      description: Lightweight health-check endpoint for orchestrators, load balancers,
+        and monitoring dashboards. Returns the status of all critical subsystems including
+        the application, database, Redis, Celery, and Celery Beat. This endpoint is
+        unauthenticated.
+      summary: Application health check
+      tags:
+      - Health
+      responses:
+        '200':
+          description: All critical subsystems are healthy.
+        '503':
+          description: One or more subsystems are unhealthy.
+  /api/v1/monitoring/logs/:
+    get:
+      operationId: monitoring_logs_list
+      description: Retrieve paginated monitoring logs with filtering and ordering
+        support.
+      summary: List monitoring logs
+      parameters:
+      - in: query
+        name: created_after
+        schema:
+          type: string
+        description: Return logs created after this datetime.
+      - in: query
+        name: created_before
+        schema:
+          type: string
+        description: Return logs created before this datetime.
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: max_response_time
+        schema:
+          type: integer
+        description: Maximum response time in milliseconds.
+      - in: query
+        name: message
+        schema:
+          type: string
+      - in: query
+        name: min_response_time
+        schema:
+          type: integer
+        description: Minimum response time in milliseconds.
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: Order results by created_at or response_time_ms. Use "-" for
+          descending order.
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: service
+        schema:
+          type: integer
+        description: Filter logs by service ID.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Filter logs by status.
+      - in: query
+        name: status_code
+        schema:
+          type: integer
+        description: Filter logs by HTTP status code.
+      tags:
+      - Logs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLogReadList'
+          description: ''
+    post:
+      operationId: monitoring_logs_create
+      description: Create a new monitoring log entry. Used by monitored services and
+        internal systems.
+      summary: Create monitoring log
+      tags:
+      - Logs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogWrite'
+            examples:
+              SuccessLogExample:
+                value:
+                  service: 1
+                  status: success
+                  status_code: 200
+                  response_time_ms: 120
+                  message: Request completed successfully
+                summary: Success Log Example
+                description: Successful request log.
+              ErrorLogExample:
+                value:
+                  service: 1
+                  status: error
+                  status_code: 500
+                  response_time_ms: 3200
+                  message: Database connection failed
+                summary: Error Log Example
+                description: Internal server error log.
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LogWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LogWrite'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogRead'
+          description: ''
+  /api/v1/monitoring/logs/{id}/:
+    get:
+      operationId: monitoring_logs_retrieve
+      description: Retrieve a single monitoring log by ID.
+      summary: Retrieve single log
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this log.
+        required: true
+      tags:
+      - Logs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogRead'
+              examples:
+                SingleLogResponse:
+                  value:
+                    id: 1
+                    service: 1
+                    service_name: Auth Service
+                    status: success
+                    status_code: 200
+                    response_time_ms: 150
+                    message: Login successful
+                    created_at: '2026-05-15T10:30:00Z'
+                  summary: Single Log Response
+                  description: Example single log response.
+          description: ''
+components:
+  schemas:
+    AlertRead:
+      type: object
+      description: |-
+        Serializer used for:
+
+        - dashboards
+        - analytics
+        - alert listings
+        - WebSocket/event responses
+
+        Optimized for read operations.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        service:
+          type: integer
+        service_name:
+          type: string
+          readOnly: true
+        alert_type:
+          $ref: '#/components/schemas/AlertTypeEnum'
+        message:
+          type: string
+          maxLength: 255
+        severity:
+          $ref: '#/components/schemas/SeverityEnum'
+        status:
+          $ref: '#/components/schemas/Status7f5Enum'
+        trigger_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        last_triggered_at:
+          type: string
+          format: date-time
+          readOnly: true
+        resolved_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        resolution_note:
+          type: string
+          nullable: true
+      required:
+      - alert_type
+      - created_at
+      - id
+      - last_triggered_at
+      - message
+      - resolved_at
+      - service
+      - service_name
+    AlertResolve:
+      type: object
+      description: |-
+        Serializer used specifically for:
+
+        - resolving alerts
+        - adding resolution notes
+
+        Keeps alert resolution logic isolated
+        from normal update operations.
+      properties:
+        status:
+          $ref: '#/components/schemas/Status7f5Enum'
+        resolution_note:
+          type: string
+          nullable: true
+    AlertTypeEnum:
+      enum:
+      - error
+      - downtime
+      - high_latency
+      type: string
+      description: |-
+        * `error` - Error
+        * `downtime` - Downtime
+        * `high_latency` - High Latency
+    AlertWrite:
+      type: object
+      description: |-
+        Serializer used for:
+
+        - manual alert creation (temporary)
+        - testing alert workflows
+        - validating incoming alert data
+
+        NOTE:
+        Later in production, alerts should ideally
+        be created internally by the alert engine
+        instead of external clients.
+      properties:
+        service:
+          type: integer
+        alert_type:
+          $ref: '#/components/schemas/AlertTypeEnum'
+        alert_key:
+          type: string
+          maxLength: 100
+        severity:
+          $ref: '#/components/schemas/SeverityEnum'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/Status7f5Enum'
+          default: open
+        message:
+          type: string
+          nullable: true
+          maxLength: 255
+      required:
+      - alert_key
+      - alert_type
+      - service
+    Email:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    GoogleLogin:
+      type: object
+      properties:
+        id_token:
+          type: string
+          writeOnly: true
+      required:
+      - id_token
+    LogRead:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        service:
+          type: integer
+          readOnly: true
+        service_name:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/Status490Enum'
+          readOnly: true
+        status_code:
+          type: integer
+          readOnly: true
+          nullable: true
+        response_time_ms:
+          type: integer
+          readOnly: true
+          nullable: true
+        message:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - message
+      - response_time_ms
+      - service
+      - service_name
+      - status
+      - status_code
+    LogWrite:
+      type: object
+      properties:
+        service:
+          type: integer
+        status:
+          $ref: '#/components/schemas/Status490Enum'
+        status_code:
+          type: integer
+          maximum: 599
+          minimum: 100
+          nullable: true
+        response_time_ms:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        message:
+          type: string
+          nullable: true
+      required:
+      - service
+    Login:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - password
+    LoginResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        tokens:
+          $ref: '#/components/schemas/Token'
+      required:
+      - message
+      - tokens
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+      - message
+    PaginatedAlertReadList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AlertRead'
+    PaginatedLogReadList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/LogRead'
+    PasswordResetConfirm:
+      type: object
+      properties:
+        token:
+          type: string
+          writeOnly: true
+        new_password:
+          type: string
+          writeOnly: true
+      required:
+      - new_password
+      - token
+    RefreshResponse:
+      type: object
+      properties:
+        access:
+          type: string
+      required:
+      - access
+    RefreshToken:
+      type: object
+      properties:
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - refresh
+    Register:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        first_name:
+          type: string
+          maxLength: 150
+      required:
+      - email
+      - password
+    SeverityEnum:
+      enum:
+      - low
+      - medium
+      - high
+      - critical
+      type: string
+      description: |-
+        * `low` - Low
+        * `medium` - Medium
+        * `high` - High
+        * `critical` - Critical
+    Status490Enum:
+      enum:
+      - success
+      - warning
+      - error
+      type: string
+      description: |-
+        * `success` - Success
+        * `warning` - Warning
+        * `error` - Error
+    Status7f5Enum:
+      enum:
+      - open
+      - acknowledged
+      - resolved
+      type: string
+      description: |-
+        * `open` - Open
+        * `acknowledged` - Acknowledged
+        * `resolved` - Resolved
+    Token:
+      type: object
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+tags:
+- name: Logs
+  description: Monitoring log operations
+- name: Alerts
+  description: Alert management operations
