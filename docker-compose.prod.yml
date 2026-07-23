@@ -134,11 +134,9 @@ services:
       test:
         [
           "CMD",
-          "wget",
-          "--no-verbose",
-          "--tries=1",
-          "--spider",
-          "http://localhost:8000/api/v1/health/"
+          "python",
+          "-c",
+          "import urllib.request,sys; r=urllib.request.urlopen('http://localhost:8000/api/v1/health/'); sys.exit(0 if r.status==200 else 1)"
         ]
       interval: 30s
       timeout: 10s
