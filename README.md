@@ -10,7 +10,8 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791?logo=postgresql&logoColor=white)
 ![Redis](https://img.shields.io/badge/Redis-8.0-DC382D?logo=redis&logoColor=white)
 ![Celery](https://img.shields.io/badge/Celery-5.6-37814A?logo=celery&logoColor=white)
-![License](https://img.shields.io/badge/License-TBD-lightgrey)
+![Docker](https://img.shields.io/badge/Docker-Supported-2496ED?logo=docker&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 </div>
 
@@ -41,6 +42,99 @@ Client → DRF API → Views → Service Layer → Models/Database
                       ↑
                     Redis (Broker + Result Backend)
 ```
+
+---
+
+## 📌 Project Status
+
+The following capabilities are implemented and operational:
+
+| Capability | Status |
+|------------|:------:|
+| Docker Support | ✅ |
+| Docker Compose (Development) | ✅ |
+| Docker Compose (Production) | ✅ |
+| PostgreSQL | ✅ |
+| Redis | ✅ |
+| Celery | ✅ |
+| Celery Beat | ✅ |
+| Health Check API | ✅ |
+| Production-ready Docker Health Checks | ✅ |
+| JWT Authentication | ✅ |
+| Email Verification | ✅ |
+| Password Reset | ✅ |
+| Refresh Tokens | ✅ |
+| Logout | ✅ |
+| Django REST Framework | ✅ |
+| Swagger / OpenAPI | ✅ |
+| Environment Configuration | ✅ |
+| Custom User Model | ✅ |
+| Production-grade Project Structure | ✅ |
+
+---
+
+## 🐳 Docker Support
+
+AI Ops can run entirely using Docker Compose — no local Python, PostgreSQL, or Redis installation required.
+
+### Containers
+
+| Container | Image | Purpose |
+|-----------|-------|---------|
+| `ai_ops_web` | Custom (Dockerfile) | Django development server / Gunicorn (prod) |
+| `ai_ops_db` | `postgres:16-alpine` | PostgreSQL database |
+| `ai_ops_redis` | `redis:7-alpine` | Celery broker & result backend |
+| `ai_ops_celery` | Custom (Dockerfile) | Celery async worker |
+| `ai_ops_celery_beat` | Custom (Dockerfile) | Celery periodic task scheduler |
+
+### Files
+
+| File | Purpose |
+|------|---------|
+| `Dockerfile` | Production-grade image (Python 3.13-slim, Gunicorn, non-root user) |
+| `docker-compose.dev.yml` | Development stack (runserver, hot-reload via volume mount) |
+| `docker-compose.prod.yml` | Production stack (Gunicorn, no volume mount) |
+| `.dockerignore` | Excludes `.git`, `venv`, `.env`, IDE files from the build context |
+
+### Quick Start (Development)
+
+```bash
+# Build and start all services
+docker compose -f docker-compose.dev.yml up --build
+
+# Start services (without rebuilding)
+docker compose -f docker-compose.dev.yml up
+
+# Stop all services
+docker compose -f docker-compose.dev.yml down
+
+# Stop and remove volumes (full reset — destroys database data)
+docker compose -f docker-compose.dev.yml down -v
+```
+
+### Quick Start (Production)
+
+```bash
+# Build and start all services
+docker compose -f docker-compose.prod.yml up --build -d
+
+# Stop all services
+docker compose -f docker-compose.prod.yml down
+```
+
+> **Note:** The development compose file mounts the project directory as a volume (`.:/app`) for live code reloading. The production compose file does **not** mount volumes — it uses the baked-in image.
+
+### Docker Health Checks
+
+All infrastructure containers include production-ready health checks:
+
+| Container | Health Check | Interval |
+|-----------|-------------|---------|
+| PostgreSQL | `pg_isready` | 10s |
+| Redis | `redis-cli ping` | 10s |
+| Django | `GET /api/v1/health/` (HTTP 200) | 30s |
+
+Django and Celery services wait for `db` and `redis` to be healthy (`condition: service_healthy`) before starting.
 
 ---
 
@@ -91,6 +185,28 @@ Client → DRF API → Views → Service Layer → Models/Database
 - **Accounts Cleanup** — Hourly scheduled task: expired email verification tokens, expired password reset tokens, inactive sessions (90-day retention)
 - **Monitoring Cleanup** — Daily scheduled task (3 AM): monitoring logs older than 120 days
 - **Alerts Cleanup** — Daily scheduled task (4 AM): resolved alerts older than 90 days
+
+### 🐳 Dockerized Environment
+
+- **Dockerfile** — Production-grade image with Python 3.13-slim, Gunicorn, non-root user, layer caching
+- **Docker Compose (Dev)** — Full development stack with hot-reload via volume mount
+- **Docker Compose (Prod)** — Production-ready stack with Gunicorn and baked-in image
+- **PostgreSQL Container** — `postgres:16-alpine` with persistent volume and `pg_isready` health check
+- **Redis Container** — `redis:7-alpine` with `redis-cli ping` health check
+- **Celery Worker Container** — Async task processing with graceful shutdown
+- **Celery Beat Container** — Periodic task scheduling with graceful shutdown
+- **Docker Health Checks** — HTTP-based health probes on the Django container via `/api/v1/health/`
+
+### 🏥 Health Monitoring
+
+- **Health Check Endpoint** — `GET /api/v1/health/` with comprehensive subsystem verification
+- **Application Check** — Verifies the Django process is alive
+- **Database Check** — Executes `SELECT 1` against PostgreSQL via Django's connection pool
+- **Redis Check** — Direct `PING` against the Redis broker
+- **Celery Check** — Broker connectivity test + worker discovery via `inspect().ping()`
+- **Celery Beat Check** — Structured placeholder (extensible via Redis heartbeat)
+- **Metadata** — Environment, Django version, hostname, API version, uptime, response time
+- **Unauthenticated** — Accessible without credentials for orchestrator probes (Docker, Kubernetes, load balancers)
 
 ### ⚙️ Background Processing
 
@@ -191,6 +307,8 @@ HTTP Request
 
 ## 🛠️ Tech Stack
 
+### Backend
+
 | Technology | Version | Purpose |
 |------------|---------|---------|
 | Python | 3.12+ | Runtime |
@@ -200,17 +318,42 @@ HTTP Request
 | Redis | 8.0.1 | Celery broker & result backend |
 | Celery | 5.6.3 | Async task processing |
 | Celery Beat | 2.9.0 | Periodic task scheduling (`django-celery-beat`) |
+| Gunicorn | — | Production WSGI server |
+
+### Authentication
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
 | SimpleJWT | 5.5.1 | JWT authentication |
-| drf-spectacular | 0.29.0 | OpenAPI 3.0 schema generation |
 | django-allauth | 65.18.0 | Google OAuth 2.0 |
+| google-auth | 2.56.0 | Google ID token verification |
+| PyJWT | 2.13.0 | JWT token handling |
+
+### Containerization
+
+| Technology | Purpose |
+|------------|---------|
+| Docker | Production-grade container image (Python 3.13-slim) |
+| Docker Compose | Multi-service orchestration (dev & prod) |
+
+### Documentation
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| drf-spectacular | 0.29.0 | OpenAPI 3.0 schema generation |
+| Swagger UI | — | Interactive API explorer |
+| ReDoc | — | Alternative API documentation viewer |
+
+### Libraries & Utilities
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
 | django-filter | 25.1 | API filtering |
 | django-ratelimit | 4.1.0 | Rate limiting |
 | django-environ | 0.12.0 | Environment variable management |
 | django-anymail | 15.0 | Email provider abstraction |
 | django-extensions | 4.1 | Development utilities |
-| google-auth | 2.56.0 | Google ID token verification |
 | psycopg2-binary | 2.9.10 | PostgreSQL adapter |
-| PyJWT | 2.13.0 | JWT token handling |
 
 ---
 
