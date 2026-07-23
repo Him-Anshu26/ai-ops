@@ -8,13 +8,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Placeholder for upcoming features and improvements.
+- Docker support with production-grade `Dockerfile` (Python 3.13-slim, Gunicorn, non-root user, layer caching).
+- Docker Compose development configuration (`docker-compose.dev.yml`) with hot-reload via volume mount.
+- Docker Compose production configuration (`docker-compose.prod.yml`) with Gunicorn and baked-in image.
+- PostgreSQL service (`postgres:16-alpine`) with persistent volume and `pg_isready` health check.
+- Redis service (`redis:7-alpine`) with `redis-cli ping` health check.
+- Celery Worker container with graceful shutdown (`stop_grace_period: 30s`).
+- Celery Beat container with graceful shutdown (`stop_grace_period: 30s`).
+- Health Check API endpoint (`GET /api/v1/health/`) with comprehensive subsystem verification.
+- Docker health checks on all infrastructure containers (PostgreSQL, Redis, Django).
+- Health monitoring service (`monitoring.services.health_service`) with application, database, Redis, Celery, and Celery Beat checks.
+- Environment-based Docker configuration with `.env.dev` and `.env.prod` support.
+- Production-ready Docker image with OCI labels, `collectstatic` at build time, and non-root `appuser`.
+- `.dockerignore` to exclude `.git`, `venv`, `.env`, and IDE files from the build context.
+- API testing improvements for health check endpoint.
 
 ### Changed
-- Nothing yet.
+- Email verification endpoint (`verify-email`) now allows unauthenticated verification (`AllowAny`) so token links work without login.
+- Improved Docker health check implementation — uses Python `urllib.request` instead of `wget`/`curl` for zero additional dependencies.
+- Updated container startup sequence — Django and Celery services wait for `db` and `redis` health (`condition: service_healthy`).
+- Improved project documentation (README) with Docker support, project status, and health check sections.
 
 ### Fixed
-- Nothing yet.
+- Fixed Docker health check failures caused by missing `wget` in slim Python image — replaced with built-in `urllib.request`.
+- Fixed `verify-email` endpoint authentication issue — unauthenticated users can now verify their email via token link.
+- Fixed container health status reporting — health endpoint returns HTTP 503 when any subsystem is unhealthy.
+- Improved Docker startup reliability — `depends_on` with `service_healthy` condition prevents premature service starts.
 
 ---
 
