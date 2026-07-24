@@ -207,6 +207,7 @@ RUN DJANGO_SETTINGS_MODULE=ai_ops.settings.prod \
     GOOGLE_CLIENT_ID=placeholder \
     GOOGLE_CLIENT_SECRET=placeholder \
     ALLOWED_HOSTS=placeholder \
+    CSRF_TRUSTED_ORIGINS=https://placeholder.com \
     python manage.py collectstatic --noinput
 
 
@@ -226,7 +227,11 @@ RUN DJANGO_SETTINGS_MODULE=ai_ops.settings.prod \
 # runtime directories (e.g., logs, media uploads).
 # -----------------------------------------------------------------------------
 RUN groupadd --system appgroup \
-    && useradd --system --no-create-home --gid appgroup appuser \
+    && useradd --system \
+       --create-home \
+       --home-dir /home/appuser \
+       --gid appgroup \
+       appuser \
     && chown -R appuser:appgroup /app
 
 # Switch to the non-root user for all subsequent instructions and
