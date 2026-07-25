@@ -433,6 +433,9 @@ class PasswordResetConfirmAPIView(APIView):
 
 # GOOGLE LOGIN API
 class GoogleLoginAPIView(APIView):
+
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [AllowAny]
     
     @google_login_schema
     # Apply rate limiting to prevent abuse of Google login endpoint
