@@ -273,8 +273,9 @@ class ResendVerificationEmailAPIView(APIView):
 # REFRESH ACCESS TOKEN
 class RefreshTokenAPIView(APIView):
 
-    permission_classes = [IsAuthenticated]
-    
+    permission_classes = [AllowAny]
+    authentication_classes = []  # Disable authentication for this endpoint
+
     @refresh_token_schema
     # Apply rate limiting to prevent abuse of refresh endpoint
     @refresh_token_limit
