@@ -3,7 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
-from rest_framework.authentication import SessionAuthentication
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 
 from django.conf import settings
 from django.shortcuts import render
@@ -432,9 +433,10 @@ class PasswordResetConfirmAPIView(APIView):
 
 
 # GOOGLE LOGIN API
+@method_decorator(csrf_exempt, name="dispatch")
 class GoogleLoginAPIView(APIView):
 
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = []
     permission_classes = [AllowAny]
     
     @google_login_schema
@@ -487,7 +489,7 @@ class GoogleLoginAPIView(APIView):
 
 
 class GoogleLoginTestAPIView(APIView):
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     def get(self, request):
