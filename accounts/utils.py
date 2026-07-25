@@ -17,7 +17,11 @@ def hash_token(token: str) -> str:
 def send_email(subject: str,message: str,recipient_list: list[str],) -> None:
 
     # This Will be Used in Production, For Now We Just Print the Email Content to the Console for Debugging
-    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, recipient_list, fail_silently=False)
+    send_mail(subject=subject, message=message, 
+              from_email=settings.DEFAULT_FROM_EMAIL, 
+              recipient_list=recipient_list, fail_silently=False, 
+              timeout=20,
+            )
 
 
     if settings.DEBUG:
