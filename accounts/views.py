@@ -59,6 +59,9 @@ from accounts.schemas.auth_schema import (
 
 # REGISTER API
 class RegisterAPIView(APIView):
+
+    authentication_classes = []
+    permission_classes = [AllowAny]
     
     @register_schema
     # Apply rate limiting on registration requests
@@ -116,6 +119,9 @@ class RegisterAPIView(APIView):
 
 # LOGIN API
 class LoginAPIView(APIView):
+
+    authentication_classes = []
+    permission_classes = [AllowAny]
 
     @login_schema
     # Apply rate limiting to prevent brute-force login attacks
@@ -229,6 +235,9 @@ class VerifyEmailAPIView(APIView):
 # RESEND VERIFICATION EMAIL API
 class ResendVerificationEmailAPIView(APIView):
 
+    permission_classes = [AllowAny]
+    authentication_classes = []  # Disable authentication for this endpoint
+
     @resend_verification_schema
     # Apply rate limiting
     @email_limit
@@ -263,6 +272,8 @@ class ResendVerificationEmailAPIView(APIView):
 
 # REFRESH ACCESS TOKEN
 class RefreshTokenAPIView(APIView):
+
+    permission_classes = [IsAuthenticated]
     
     @refresh_token_schema
     # Apply rate limiting to prevent abuse of refresh endpoint
@@ -350,6 +361,9 @@ class LogoutAPIView(APIView):
 # PASSWORD RESET REQUEST
 class PasswordResetRequestAPIView(APIView):
 
+    permission_classes = [AllowAny]
+    authentication_classes = []  # Disable authentication for this endpoint
+
     @password_reset_request_schema
     # Apply rate limiting
     @password_reset_limit
@@ -383,6 +397,9 @@ class PasswordResetRequestAPIView(APIView):
 
 # PASSWORD RESET CONFIRM
 class PasswordResetConfirmAPIView(APIView):
+
+    permission_classes = [AllowAny]
+    authentication_classes = []  # Disable authentication for this endpoint
 
     @password_reset_confirm_schema
     def post(self, request):
