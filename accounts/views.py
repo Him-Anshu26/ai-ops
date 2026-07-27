@@ -9,6 +9,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.shortcuts import render
 
+import logging
+
 
 from accounts.serializers import (
     GoogleLoginSerializer,
@@ -55,6 +57,8 @@ from accounts.schemas.auth_schema import (
     password_reset_confirm_schema,
 )
 
+
+logger = logging.getLogger(__name__)
 
 
 # REGISTER API
@@ -105,12 +109,33 @@ class RegisterAPIView(APIView):
         # Generate verification token
         # Store hashed token in DB
         # Send verification email to user
-        send_verification_email(user)
+        try:
+            send_verification_email(user)
 
-        # Return API response
+            message = (
+                "User registered successfully. "
+                "Please verify your email."
+            )
+
+        except Exception:
+
+            logger.exception(
+                "Failed to send verification email",
+                extra={
+                    "user_id": user.id,
+                    "email": user.email,
+                },
+            )
+
+            message = (
+                "Account created successfully. "
+                "Verification email could not be sent. "
+                "Please try again later."
+            )
+
         return Response(
             {
-                "message": "User registered successfully. Please verify your email."
+                "message": message,
             },
             status=status.HTTP_201_CREATED,
         )
