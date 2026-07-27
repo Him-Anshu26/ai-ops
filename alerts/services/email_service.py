@@ -1,7 +1,7 @@
 import logging
 
 from django.conf import settings
-from django.core.mail import send_mail
+from accounts.utils import send_email
 
 from alerts.models import Alert
 
@@ -36,12 +36,10 @@ def send_alert_email(alert: Alert) -> bool:
     body = _build_body(alert)
 
     try:
-        send_mail(
+        send_email(
             subject=subject,
             message=body,
-            from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=settings.ALERT_EMAIL_RECIPIENTS,
-            fail_silently=False,
         )
 
         logger.info(
