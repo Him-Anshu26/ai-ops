@@ -127,6 +127,8 @@ class SendVerificationEmailService:
         # logger.info("RAW VERIFICATION LINK: %s", verification_link)
         # logger.info("Use This Token For Postman Verification: %s", raw_token)
 
+        logger.info("About to send verification email to %s", user.email)
+
         # Send email to user
         send_email(
             subject="Verify your email",

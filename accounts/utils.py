@@ -39,7 +39,16 @@ def send_email(
 
     try:
 
+        logger.info("========== RESEND START ==========")
+        logger.info("API KEY LOADED: %s", bool(settings.RESEND_API_KEY))
+        logger.info("FROM: %s", settings.DEFAULT_FROM_EMAIL)
+        logger.info("TO: %s", recipient_list)
+        logger.info("SUBJECT: %s", subject)
+
         response = resend.Emails.send(params)
+
+        logger.info("RESEND RESPONSE: %s", response)
+        logger.info("========== RESEND END ==========")
 
         logger.info(
             "Email sent successfully",
@@ -51,15 +60,7 @@ def send_email(
         )
 
     except Exception:
-
-        logger.exception(
-            "Failed to send email",
-            extra={
-                "provider": "resend",
-                "recipients": recipient_list,
-            },
-        )
-
+        logger.exception("RESEND FAILED")
         raise
 
 
