@@ -21,11 +21,12 @@ def send_email(
     recipient_list: list[str],
 ) -> None:
     """
-    Send email using Resend API.
+    Send email using the Resend API.
 
     Raises:
         Exception:
-            Any Resend error.
+            Re-raises any Resend exception so the caller
+            can decide how to handle failures.
     """
 
     resend.api_key = settings.RESEND_API_KEY
@@ -39,28 +40,29 @@ def send_email(
 
     try:
 
-        logger.info("========== RESEND START ==========")
-        logger.info("API KEY LOADED: %s", bool(settings.RESEND_API_KEY))
-        logger.info("FROM: %s", settings.DEFAULT_FROM_EMAIL)
-        logger.info("TO: %s", recipient_list)
-        logger.info("SUBJECT: %s", subject)
-
         response = resend.Emails.send(params)
-
-        logger.info("RESEND RESPONSE: %s", response)
-        logger.info("========== RESEND END ==========")
 
         logger.info(
             "Email sent successfully",
             extra={
                 "provider": "resend",
-                "recipients": recipient_list,
+                "recipient_count": len(recipient_list),
+                "subject": subject,
                 "response": response,
             },
         )
 
     except Exception:
-        logger.exception("RESEND FAILED")
+
+        logger.exception(
+            "Failed to send email using Resend",
+            extra={
+                "provider": "resend",
+                "recipient_count": len(recipient_list),
+                "subject": subject,
+            },
+        )
+
         raise
 
 
