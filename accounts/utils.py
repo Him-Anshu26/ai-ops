@@ -2,6 +2,7 @@ import secrets
 import hashlib
 from django.core.mail import send_mail
 from django.conf import settings
+import resend
 
 import logging
 
@@ -14,19 +15,52 @@ def generate_token():
 def hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
-def send_email(subject: str,message: str,recipient_list: list[str],) -> None:
+def send_email(
+    subject: str,
+    message: str,
+    recipient_list: list[str],
+) -> None:
+    """
+    Send email using Resend API.
 
-    # This Will be Used in Production, For Now We Just Print the Email Content to the Console for Debugging
-    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, recipient_list, fail_silently=False)
+    Raises:
+        Exception:
+            Any Resend error.
+    """
 
+    resend.api_key = settings.RESEND_API_KEY
 
-    if settings.DEBUG:
-        # This is for the Development Environment, to see the email content in the console
-        logger.debug("\n========== RAW EMAIL ==========")
-        logger.debug("TO: %s", recipient_list)
-        logger.debug("SUBJECT: %s", subject)
-        logger.debug("MESSAGE: %s", message)
-        logger.debug("================================\n")
+    params = {
+        "from": settings.DEFAULT_FROM_EMAIL,
+        "to": recipient_list,
+        "subject": subject,
+        "text": message,
+    }
+
+    try:
+
+        response = resend.Emails.send(params)
+
+        logger.info(
+            "Email sent successfully",
+            extra={
+                "provider": "resend",
+                "recipients": recipient_list,
+                "response": response,
+            },
+        )
+
+    except Exception:
+
+        logger.exception(
+            "Failed to send email",
+            extra={
+                "provider": "resend",
+                "recipients": recipient_list,
+            },
+        )
+
+        raise
 
 
 
