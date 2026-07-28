@@ -4,14 +4,16 @@
 
 **Production-grade backend for real-time service monitoring, intelligent alert generation, and incident lifecycle management.**
 
-![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)
-![Django](https://img.shields.io/badge/Django-5.2-092E20?logo=django&logoColor=white)
-![DRF](https://img.shields.io/badge/DRF-3.16-ff1709?logo=django&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791?logo=postgresql&logoColor=white)
-![Redis](https://img.shields.io/badge/Redis-8.0-DC382D?logo=redis&logoColor=white)
-![Celery](https://img.shields.io/badge/Celery-5.6-37814A?logo=celery&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-Supported-2496ED?logo=docker&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green)
+[![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/Django-5.2-092E20?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
+[![DRF](https://img.shields.io/badge/DRF-3.16-ff1709?style=for-the-badge&logo=django&logoColor=white)](https://www.django-rest-framework.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-8.0-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
+[![Celery](https://img.shields.io/badge/Celery-5.6-37814A?style=for-the-badge&logo=celery&logoColor=white)](https://docs.celeryq.dev/)
+[![Docker](https://img.shields.io/badge/Docker-Supported-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Railway](https://img.shields.io/badge/Railway-Deployed-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)](https://railway.app/)
+[![Resend](https://img.shields.io/badge/Resend-Email-000000?style=for-the-badge&logo=resend&logoColor=white)](https://resend.com/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 </div>
 
@@ -21,6 +23,8 @@
 
 **AI Ops** is a backend platform built with Django REST Framework that provides centralized monitoring and alerting for distributed services. It ingests structured logs from monitored services, automatically evaluates alert rules against incoming data, generates alerts with severity classification, and dispatches notifications through configurable channels.
 
+The platform is deployed to **Railway** with PostgreSQL, Redis, Celery Worker, and Celery Beat as separate managed services. Production email delivery is powered by **Resend**.
+
 ### Business Problem
 
 Modern infrastructure teams need a single pane of glass to monitor service health, detect anomalies, and manage incidents from detection through resolution. AI Ops provides:
@@ -28,7 +32,7 @@ Modern infrastructure teams need a single pane of glass to monitor service healt
 - **Log Ingestion** — Centralized collection of monitoring logs from any service.
 - **Automated Alert Generation** — Rule-based alert engine that detects errors and high-latency conditions.
 - **Incident Lifecycle Management** — Structured workflow for acknowledging and resolving alerts.
-- **Notification Dispatch** — Email notifications with Slack placeholder for future expansion.
+- **Notification Dispatch** — Asynchronous email notifications via Resend API with Slack placeholder for future expansion.
 - **Scheduled Cleanup** — Automated retention policies to prevent database bloat.
 
 ### High-Level Architecture
@@ -36,7 +40,7 @@ Modern infrastructure teams need a single pane of glass to monitor service healt
 ```
 Client → DRF API → Views → Service Layer → Models/Database
                       ↓
-               Celery Worker → Alert Engine → Notification Service → Email/Slack
+               Celery Worker → Alert Engine → Notification Service → Email Service → Resend API
                       ↑
                Celery Beat → Scheduled Cleanup Tasks
                       ↑
@@ -61,12 +65,20 @@ The following capabilities are implemented and operational:
 | Health Check API | ✅ |
 | Production-ready Docker Health Checks | ✅ |
 | JWT Authentication | ✅ |
+| Google OAuth 2.0 | ✅ |
 | Email Verification | ✅ |
 | Password Reset | ✅ |
 | Refresh Tokens | ✅ |
 | Logout | ✅ |
-| Django REST Framework | ✅ |
+| Alert Engine | ✅ |
+| Background Notifications (Resend) | ✅ |
+| Cursor Pagination | ✅ |
+| Advanced Filtering | ✅ |
 | Swagger / OpenAPI | ✅ |
+| Railway Deployment | ✅ |
+| WhiteNoise Static Files | ✅ |
+| Production Logging | ✅ |
+| Django REST Framework | ✅ |
 | Environment Configuration | ✅ |
 | Custom User Model | ✅ |
 | Production-grade Project Structure | ✅ |
@@ -104,8 +116,8 @@ docs/
 | Architecture | `docs/architecture` |
 | Screenshots | `docs/screenshots` |
 | Postman Collection | `docs/postman` |
-| Docker Compose | `docker-compose.dev.yml` |
-| Docker Production | `docker-compose.prod.yml` |
+| Docker Compose (Dev) | `docker-compose.dev.yml` |
+| Docker Compose (Prod) | `docker-compose.prod.yml` |
 
 ---
 
@@ -116,7 +128,7 @@ AI Ops can run entirely using Docker Compose — no local Python, PostgreSQL, or
 ### Containers
 
 | Container | Image | Purpose |
-|-----------|-------|---------|
+|-----------|-------|---------:|
 | `ai_ops_web` | Custom (Dockerfile) | Django development server / Gunicorn (prod) |
 | `ai_ops_db` | `postgres:16-alpine` | PostgreSQL database |
 | `ai_ops_redis` | `redis:7-alpine` | Celery broker & result backend |
@@ -126,10 +138,10 @@ AI Ops can run entirely using Docker Compose — no local Python, PostgreSQL, or
 ### Files
 
 | File | Purpose |
-|------|---------|
+|------|---------:|
 | `Dockerfile` | Production-grade image (Python 3.13-slim, Gunicorn, non-root user) |
 | `docker-compose.dev.yml` | Development stack (runserver, hot-reload via volume mount) |
-| `docker-compose.prod.yml` | Production stack (Gunicorn, no volume mount) |
+| `docker-compose.prod.yml` | Production stack (Gunicorn, no source volume mount) |
 | `.dockerignore` | Excludes `.git`, `venv`, `.env`, IDE files from the build context |
 
 ### Quick Start (Development)
@@ -158,7 +170,7 @@ docker compose -f docker-compose.prod.yml up --build -d
 docker compose -f docker-compose.prod.yml down
 ```
 
-> **Note:** The development compose file mounts the project directory as a volume (`.:/app`) for live code reloading. The production compose file does **not** mount volumes — it uses the baked-in image.
+> **Note:** The development compose file mounts the project directory as a volume (`.:/app`) for live code reloading. The production compose file does **not** mount source volumes — it uses the baked-in image. Production compose includes persistent volumes for static files (`static_volume`) and media (`media_volume`).
 
 ### Docker Health Checks
 
@@ -174,37 +186,38 @@ Django and Celery services wait for `db` and `redis` to be healthy (`condition: 
 
 ### Docker Features
 
-- **Dockerfile** — Multi-stage production image (if applicable) and non-root container support
-- **docker-compose.dev.yml** — Development stack with hot reloading
-- **docker-compose.prod.yml** — Production stack ready for deployment
-- **PostgreSQL** — Managed database service
-- **Redis** — In-memory caching and message broker
-- **Celery Worker** — Asynchronous task processing
-- **Celery Beat** — Scheduled background tasks
-- **Health Checks** — Production-ready container health monitoring
-- **Non-root container** — Enhances security
-- **Environment variable support** — Fully configurable via `.env` files
+- **Dockerfile** — Production-grade image with Python 3.13-slim, Gunicorn, non-root `appuser`, OCI labels, and layer caching optimization
+- **docker-compose.dev.yml** — Development stack with hot reloading via volume mount
+- **docker-compose.prod.yml** — Production stack with Gunicorn, static/media volumes, and restart policies
+- **PostgreSQL** — `postgres:16-alpine` with persistent volume and `pg_isready` health check
+- **Redis** — `redis:7-alpine` with `redis-cli ping` health check
+- **Celery Worker** — Asynchronous task processing with graceful shutdown (`stop_grace_period: 30s`)
+- **Celery Beat** — Scheduled background tasks with graceful shutdown (`stop_grace_period: 30s`)
+- **Health Checks** — HTTP-based health probes on Django via `/api/v1/health/`
+- **Non-root container** — Enhances security by running as `appuser`
+- **Restart policies** — `unless-stopped` on all services
+- **Environment variable support** — Fully configurable via `.env.dev` and `.env.prod` files
+- **Network isolation** — All services communicate over a dedicated `ai_ops_network` bridge
 
 ---
 
 ## ✨ Key Features
 
-### 🚀 API Features
+### 🚀 API & Infrastructure
 
-- ✔ Dockerized deployment
-- ✔ Health Monitoring
-- ✔ Swagger
-- ✔ ReDoc
-- ✔ OpenAPI
-- ✔ Postman Collection
-- ✔ Celery
-- ✔ Celery Beat
-- ✔ Redis
-- ✔ PostgreSQL
-- ✔ Docker Health Checks
-- ✔ Production Dockerfile
-- ✔ Development Compose
-- ✔ Production Compose
+- ✔ Dockerized deployment (development & production)
+- ✔ Railway cloud deployment
+- ✔ Health monitoring endpoint
+- ✔ Swagger / ReDoc / OpenAPI 3.0
+- ✔ Postman Collection & Environment
+- ✔ Celery asynchronous task processing
+- ✔ Celery Beat periodic scheduling
+- ✔ Redis broker & result backend
+- ✔ PostgreSQL primary database
+- ✔ Docker health checks
+- ✔ Production Dockerfile (Gunicorn, non-root user)
+- ✔ WhiteNoise static file serving
+- ✔ Structured production logging
 - ✔ MIT License
 
 ### 🔐 Authentication & Authorization
@@ -239,19 +252,91 @@ Django and Celery services wait for `db` and `redis` to be healthy (`condition: 
 - **Alert Lifecycle** — `open` → `acknowledged` → `resolved` workflow with resolution notes
 - **Immutable Incident Records** — Alerts are treated as append-only; no generic update/delete operations
 
-### 📨 Notification Service
+### 📨 Notification System
 
-- **Email Notifications** — SMTP-based alert email delivery via Django's `send_mail`
-- **HTML Email Templates** — Professional HTML email template for alert notifications
-- **Notification Orchestration** — Provider-isolated dispatch with per-provider error handling
+The notification system follows a clean, layered architecture:
+
+```
+Alert Created/Updated
+        ↓
+  Celery Task (dispatch_alert_notifications_task)
+        ↓
+  Notification Service (orchestrator)
+        ↓
+  Email Service (provider)
+        ↓
+  Resend API (delivery)
+```
+
+- **Asynchronous Notifications** — Alert notifications are dispatched asynchronously via Celery background tasks
+- **Notification Service Layer** — Provider-isolated orchestration with per-provider error handling; provider failures never interrupt alert processing
+- **Resend Email Delivery** — Production email delivery powered by the Resend API (`resend` Python SDK)
+- **HTML Email Templates** — Professional HTML template (`alert_created.html`) and plain-text fallback (`alert_created.txt`) for alert notifications
+- **Feature Flags** — `EMAIL_NOTIFICATIONS_ENABLED` and `SLACK_NOTIFICATIONS_ENABLED` toggle notification channels independently
 - **Slack Placeholder** — Structured placeholder ready for Slack Incoming Webhooks integration
-- **Feature Flags** — `EMAIL_NOTIFICATIONS_ENABLED` and `SLACK_NOTIFICATIONS_ENABLED` toggle notifications
+- **Transaction Safety** — Notification tasks are dispatched via `transaction.on_commit()` to ensure alerts exist in the database before workers process them
+
+#### Notification Screenshots
+
+**Email Verification Notification**
+
+![Email Verification Notification](docs/screenshots/email-verification-notification.png)
+
+**High Latency Alert Notification**
+
+![High Latency Alert Notification](docs/screenshots/high-latency-alert-notification.png)
+
+**Critical Error Alert Notification**
+
+![Critical Error Alert Notification](docs/screenshots/critical-error-alert-notification.png)
 
 ### 🧹 Cleanup Services
 
 - **Accounts Cleanup** — Hourly scheduled task: expired email verification tokens, expired password reset tokens, inactive sessions (90-day retention)
 - **Monitoring Cleanup** — Daily scheduled task (3 AM): monitoring logs older than 120 days
 - **Alerts Cleanup** — Daily scheduled task (4 AM): resolved alerts older than 90 days
+
+### 🏥 Health Monitoring
+
+- **Health Check Endpoint** — `GET /api/v1/health/` with comprehensive subsystem verification
+- **Application Check** — Verifies the Django process is alive
+- **Database Check** — Executes `SELECT 1` against PostgreSQL via Django's connection pool
+- **Redis Check** — Direct `PING` against the Redis broker
+- **Celery Check** — Broker connectivity test + worker discovery via `inspect().ping()`
+- **Celery Beat Check** — Structured placeholder (extensible via Redis heartbeat)
+- **Metadata** — Environment, Django version, hostname, API version, uptime, response time
+- **Unauthenticated** — Accessible without credentials for orchestrator probes (Docker, Railway, load balancers)
+
+### 📦 Static File Serving
+
+- **WhiteNoise** — Production static file serving via `whitenoise.middleware.WhiteNoiseMiddleware`
+- **Compressed Manifests** — `CompressedManifestStaticFilesStorage` for cache-busting and Gzip/Brotli compression
+- **Build-Time Collection** — `collectstatic` runs during Docker image build so the container is ready to serve static files immediately on startup
+
+### 📋 Structured Logging
+
+AI Ops uses Django's structured logging framework with a standardized format:
+
+```
+[2026-07-20 10:30:00] INFO monitoring: Starting alert processing for log 42
+```
+
+| Logger | Level | Propagate | Purpose |
+|--------|-------|-----------|---------:|
+| `root` | INFO | — | Catch-all |
+| `django` | INFO | No | Django framework logs |
+| `ai_ops` | INFO | No | Application-wide logs |
+| `monitoring` | INFO | No | Log ingestion and alert engine |
+| `alerts` | INFO | No | Alert lifecycle and notifications |
+
+**What Gets Logged:**
+
+- User registration, login, logout, email verification
+- Alert rule evaluation (matching rules, cooldown skips, create/update decisions)
+- Notification dispatch (email sent/failed via Resend, Slack placeholder)
+- Cleanup task execution (deleted token / session / log / alert counts)
+- Race condition recovery (IntegrityError fallbacks)
+- Celery task start/finish with log and alert IDs
 
 ### 🐳 Dockerized Environment
 
@@ -263,54 +348,6 @@ Django and Celery services wait for `db` and `redis` to be healthy (`condition: 
 - **Celery Worker Container** — Async task processing with graceful shutdown
 - **Celery Beat Container** — Periodic task scheduling with graceful shutdown
 - **Docker Health Checks** — HTTP-based health probes on the Django container via `/api/v1/health/`
-
-### 🏥 Health Monitoring
-
-- **Health Check Endpoint** — `GET /api/v1/health/` with comprehensive subsystem verification
-- **Application Check** — Verifies the Django process is alive
-- **Database Check** — Executes `SELECT 1` against PostgreSQL via Django's connection pool
-- **Redis Check** — Direct `PING` against the Redis broker
-- **Celery Check** — Broker connectivity test + worker discovery via `inspect().ping()`
-- **Celery Beat Check** — Structured placeholder (extensible via Redis heartbeat)
-- **Metadata** — Environment, Django version, hostname, API version, uptime, response time
-- **Unauthenticated** — Accessible without credentials for orchestrator probes (Docker, Kubernetes, load balancers)
-
-### ⚙️ Background Processing
-
-- **Celery Workers** — Asynchronous task execution for alert processing and notification dispatch
-- **Celery Beat** — Periodic scheduling for all cleanup tasks
-- **Redis** — Message broker and result backend
-- **Retry Strategy** — Exponential backoff with jitter for transient failures (`ConnectionError`, `DatabaseError`), max 5 retries
-- **Transaction Safety** — `transaction.on_commit()` ensures Celery tasks run only after DB commits
-
-### 📡 API Quality
-
-- **Swagger / OpenAPI 3.0** — Auto-generated interactive API documentation via drf-spectacular
-- **ReDoc** — Alternative API documentation viewer
-- **Request/Response Examples** — Rich OpenAPI examples for every endpoint
-- **Cursor Pagination** — Both logs and alerts use cursor-based pagination for large datasets
-- **Input Validation** — Field-level and object-level validation on all serializers
-- **Rate Limiting** — IP-based rate limiting on all auth endpoints via django-ratelimit
-- **Anonymous Throttling** — Global 100 requests/day for unauthenticated requests
-
-### 🛡️ Security
-
-- **Password Hashing** — Django's PBKDF2 password hashing
-- **Token Hashing** — SHA-256 hashing for verification, reset, and refresh tokens before DB storage
-- **HSTS / SSL** — Production settings enforce HTTPS redirect, HSTS preload, secure cookies
-- **CSRF Protection** — Django CSRF middleware enabled
-- **Clickjacking Protection** — `X-Frame-Options: DENY` in production
-- **Content Type Sniffing Prevention** — `SECURE_CONTENT_TYPE_NOSNIFF` enabled
-- **Email Enumeration Prevention** — Generic responses on registration, verification resend, and password reset
-- **Split Settings** — Separate `dev.py` and `prod.py` configurations
-- **Environment Variables** — All secrets managed via `django-environ`
-
-### 🎛️ Admin Interface
-
-- **Custom User Admin** — Search, filter, and manage users with verification status
-- **Service Admin** — Bulk status actions (active/down/maintenance), auto-assigned `created_by`
-- **Log Admin** — Read-only log viewer with formatted JSON metadata display, no add/edit/delete
-- **Alert Admin** — Bulk lifecycle actions (open/acknowledge/resolve), autocomplete fields, date hierarchy
 
 ---
 
@@ -362,10 +399,15 @@ HTTP Request
 │  (DB)  │ │   Tasks     │     notification dispatch,
 └────────┘ └─────┬──────┘     cleanup jobs
                  │
-                 ▼
-           ┌──────────┐
-           │  Redis    │ ─── Broker + Result Backend
-           └──────────┘
+            ┌────┴────┐
+            ▼         ▼
+      ┌──────────┐ ┌───────────────────┐
+      │  Redis    │ │ Notification Svc  │
+      │ (Broker)  │ │   ↓               │
+      └──────────┘ │ Email Service      │
+                   │   ↓               │
+                   │ Resend API        │
+                   └───────────────────┘
 ```
 
 ### Component Responsibilities
@@ -377,10 +419,43 @@ HTTP Request
 | **Services** | Business logic, DB transactions, token management, orchestration |
 | **Models** | Data persistence, constraints, indexes, domain methods |
 | **Tasks** | Async processing, retry policies, Celery Beat scheduling |
+| **Notification Service** | Provider-isolated notification orchestration |
+| **Email Service** | Email delivery via Resend API |
 | **Schemas** | OpenAPI documentation decorators with examples |
 | **Filters** | `django-filter` backends for query parameter filtering |
 | **Pagination** | Cursor-based pagination for time-series data |
 | **Throttling** | IP-based rate limiting per endpoint |
+
+---
+
+## ☁️ Deployment
+
+### Railway
+
+AI Ops is deployed to **Railway** as a multi-service application:
+
+| Service | Description |
+|---------|-------------|
+| **Django Web** | Gunicorn WSGI server serving the DRF API |
+| **PostgreSQL** | Managed PostgreSQL database |
+| **Redis** | Message broker and result backend for Celery |
+| **Celery Worker** | Asynchronous task processing (alerts, notifications) |
+| **Celery Beat** | Periodic task scheduler (cleanup jobs) |
+
+**Deployment Details:**
+
+- **Custom Start Commands** — Each Railway service uses a custom start command (e.g., Gunicorn for web, `celery -A ai_ops worker` for worker, `celery -A ai_ops beat` for beat)
+- **Redis Internal Networking** — Redis communicates with Django and Celery services over Railway's internal private network
+- **Environment Variables** — All secrets and configuration are managed via Railway's environment variable interface
+- **Health Checks** — Railway monitors the Django service via `GET /api/v1/health/`
+- **Static Files** — Served via WhiteNoise directly from the Django container (no separate CDN required)
+
+### Docker Compose
+
+For self-hosted deployments, use the provided Docker Compose configurations:
+
+- **Development** — `docker-compose.dev.yml` (Django `runserver`, hot-reload, volume mount)
+- **Production** — `docker-compose.prod.yml` (Gunicorn, static/media volumes, restart policies)
 
 ---
 
@@ -397,7 +472,7 @@ HTTP Request
 | Redis | 8.0.1 | Celery broker & result backend |
 | Celery | 5.6.3 | Async task processing |
 | Celery Beat | 2.9.0 | Periodic task scheduling (`django-celery-beat`) |
-| Gunicorn | — | Production WSGI server |
+| Gunicorn | 26.0.0 | Production WSGI server |
 
 ### Authentication
 
@@ -408,12 +483,21 @@ HTTP Request
 | google-auth | 2.56.0 | Google ID token verification |
 | PyJWT | 2.13.0 | JWT token handling |
 
-### Containerization
+### Email & Notifications
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Resend | 2.34.0 | Production email delivery API |
+| django-anymail | 15.0 | Email provider abstraction layer |
+
+### Containerization & Deployment
 
 | Technology | Purpose |
 |------------|---------|
 | Docker | Production-grade container image (Python 3.13-slim) |
 | Docker Compose | Multi-service orchestration (dev & prod) |
+| Railway | Cloud deployment platform |
+| WhiteNoise | 6.12.0 | Production static file serving |
 
 ### Documentation
 
@@ -430,7 +514,6 @@ HTTP Request
 | django-filter | 25.1 | API filtering |
 | django-ratelimit | 4.1.0 | Rate limiting |
 | django-environ | 0.12.0 | Environment variable management |
-| django-anymail | 15.0 | Email provider abstraction |
 | django-extensions | 4.1 | Development utilities |
 | psycopg2-binary | 2.9.10 | PostgreSQL adapter |
 
@@ -442,9 +525,9 @@ HTTP Request
 ai_ops/
 ├── ai_ops/                    # Django project configuration
 │   ├── settings/
-│   │   ├── base.py            # Shared settings (DB, JWT, Celery, logging, email)
+│   │   ├── base.py            # Shared settings (DB, JWT, Celery, logging, email, Resend, WhiteNoise)
 │   │   ├── dev.py             # Development overrides (DEBUG, BrowsableAPI, AllowAny)
-│   │   └── prod.py            # Production hardening (HSTS, secure cookies, SSL)
+│   │   └── prod.py            # Production hardening (HSTS, secure cookies, SSL, ALLOWED_HOSTS)
 │   ├── celery.py              # Celery application setup
 │   ├── urls.py                # Root URL configuration with API versioning
 │   ├── wsgi.py                # WSGI entry point
@@ -457,7 +540,7 @@ ai_ops/
 │   ├── services.py            # Auth business logic (service classes)
 │   ├── serializers.py         # Request/response serializers
 │   ├── tokens.py              # JWT token generation and decoding
-│   ├── utils.py               # Token generation, hashing, email sending
+│   ├── utils.py               # Token generation, hashing, Resend email sending
 │   ├── throttling.py          # Per-endpoint rate limiting
 │   ├── tasks.py               # Celery cleanup tasks
 │   ├── admin.py               # Custom UserAdmin
@@ -489,8 +572,8 @@ ai_ops/
 │   ├── serializers/
 │   │   └── alert_serializer.py # AlertWrite, AlertRead, AlertResolve serializers
 │   ├── services/
-│   │   ├── notification_service.py  # Notification orchestrator
-│   │   ├── email_service.py         # SMTP email delivery
+│   │   ├── notification_service.py  # Notification orchestrator (provider-isolated dispatch)
+│   │   ├── email_service.py         # Resend email delivery
 │   │   ├── slack_service.py         # Slack webhook placeholder
 │   │   └── cleanup_service.py       # Resolved alert cleanup
 │   ├── filters.py             # Alert filtering (status, type, severity, time, trigger count)
@@ -508,6 +591,11 @@ ai_ops/
 │   └── google_login_test/
 │       └── google_test.html   # Google OAuth test page
 │
+├── docs/
+│   ├── architecture/          # Architecture diagrams
+│   ├── postman/               # Postman collection & environment
+│   └── screenshots/           # Application screenshots
+│
 ├── Dockerfile                 # Production-grade Docker image
 ├── docker-compose.dev.yml     # Development Docker Compose stack
 ├── docker-compose.prod.yml    # Production Docker Compose stack
@@ -515,9 +603,9 @@ ai_ops/
 ├── manage.py                  # Django management script
 ├── requirements.txt           # Python dependencies
 ├── .env.example               # Environment variable template
-├── .env.dev                   # Development environment variables (not committed)
-├── .env.prod                  # Production environment variables (not committed)
 ├── LICENSE                    # MIT License
+├── CONTRIBUTING.md            # Contribution guidelines
+├── CHANGELOG.md               # Project changelog
 └── .gitignore                 # Git ignore rules
 ```
 
@@ -614,32 +702,66 @@ The API is now available at `http://localhost:8000/api/v1/`.
 
 ## 🔐 Environment Variables
 
+All secrets and configuration are managed via `django-environ`. Variables are loaded from `.env.dev` (development) or `.env.prod` (production) based on the `DJANGO_SETTINGS_MODULE` setting.
+
+### Core
+
 | Variable | Required | Description | Default | Example |
 |----------|:--------:|-------------|---------|---------|
 | `SECRET_KEY` | ✅ | Django secret key | — | `your-secret-key` |
+| `DEBUG` | ❌ | Enable debug mode | `False` | `True` |
+| `ALLOWED_HOSTS` | ✅ (prod) | Comma-separated allowed hosts | — | `api.example.com` |
+| `DJANGO_SETTINGS_MODULE` | ❌ | Settings module path | `ai_ops.settings.dev` | `ai_ops.settings.prod` |
+
+### Database
+
+| Variable | Required | Description | Default | Example |
+|----------|:--------:|-------------|---------|---------|
 | `DB_NAME` | ✅ | PostgreSQL database name | `postgres` | `ai_ops_db` |
 | `DB_USER` | ✅ | PostgreSQL username | `postgres` | `postgres` |
 | `DB_PASSWORD` | ✅ | PostgreSQL password | — | `your-db-password` |
-| `DB_HOST` | ❌ | PostgreSQL host | `localhost` | `localhost` |
+| `DB_HOST` | ❌ | PostgreSQL host | `localhost` | `db` |
 | `DB_PORT` | ❌ | PostgreSQL port | `5432` | `5432` |
+
+### Celery & Redis
+
+| Variable | Required | Description | Default | Example |
+|----------|:--------:|-------------|---------|---------|
 | `CELERY_BROKER_URL` | ✅ | Redis broker URL | — | `redis://localhost:6379/0` |
 | `CELERY_RESULT_BACKEND` | ✅ | Redis result backend URL | — | `redis://localhost:6379/0` |
-| `EMAIL_PROVIDER` | ✅ | Email provider name | — | `gmail` |
-| `EMAIL_BACKEND` | ✅ | Django email backend | — | `django.core.mail.backends.smtp.EmailBackend` |
-| `EMAIL_HOST` | ✅ | SMTP host | — | `smtp.gmail.com` |
-| `EMAIL_PORT` | ✅ | SMTP port | — | `587` |
-| `EMAIL_USE_TLS` | ✅ | Enable TLS | — | `True` |
-| `EMAIL_HOST_USER` | ✅ | SMTP username | — | `you@gmail.com` |
-| `EMAIL_HOST_PASSWORD` | ✅ | SMTP password / app password | — | `your-app-password` |
-| `DEFAULT_FROM_EMAIL` | ✅ | Default sender address | — | `AI Ops <noreply@example.com>` |
+
+### Email (Resend)
+
+| Variable | Required | Description | Default | Example |
+|----------|:--------:|-------------|---------|---------|
+| `EMAIL_PROVIDER` | ✅ | Email provider identifier | `console` | `resend` |
+| `RESEND_API_KEY` | ✅ | Resend API key for email delivery | — | `re_xxxxxxxxx` |
+| `DEFAULT_FROM_EMAIL` | ✅ | Default sender email address | — | `AI-Ops <onboarding@resend.dev>` |
 | `ALERT_EMAIL_RECIPIENTS` | ✅ | Comma-separated alert recipients | — | `admin@example.com` |
-| `FRONTEND_URL` | ❌ | Frontend base URL for links | `http://localhost:3000` | `https://app.example.com` |
-| `BACKEND_URL` | ❌ | Backend base URL | `http://localhost:8000` | `https://api.example.com` |
-| `GOOGLE_CLIENT_ID` | ✅ | Google OAuth client ID | — | `xxxx.apps.googleusercontent.com` |
-| `GOOGLE_CLIENT_SECRET` | ✅ | Google OAuth client secret | — | `GOCSPX-xxxx` |
+
+### Notifications
+
+| Variable | Required | Description | Default | Example |
+|----------|:--------:|-------------|---------|---------|
 | `EMAIL_NOTIFICATIONS_ENABLED` | ❌ | Enable email alert notifications | `True` | `True` |
-| `SLACK_NOTIFICATIONS_ENABLED` | ❌ | Enable Slack notifications | `False` | `False` |
-| `ALLOWED_HOSTS` | ✅ (prod) | Comma-separated allowed hosts | — | `api.example.com` |
+| `SLACK_NOTIFICATIONS_ENABLED` | ❌ | Enable Slack notifications (placeholder) | `False` | `False` |
+
+### OAuth & URLs
+
+| Variable | Required | Description | Default | Example |
+|----------|:--------:|-------------|---------|---------|
+| `GOOGLE_CLIENT_ID` | ✅ | Google OAuth 2.0 client ID | — | `xxxx.apps.googleusercontent.com` |
+| `GOOGLE_CLIENT_SECRET` | ✅ | Google OAuth 2.0 client secret | — | `GOCSPX-xxxx` |
+| `FRONTEND_URL` | ❌ | Frontend base URL for email links | `http://localhost:3000` | `https://app.example.com` |
+| `BACKEND_URL` | ❌ | Backend base URL | `http://localhost:8000` | `https://api.example.com` |
+
+### Production
+
+| Variable | Required | Description | Default | Example |
+|----------|:--------:|-------------|---------|---------|
+| `CSRF_TRUSTED_ORIGINS` | ✅ (prod) | Comma-separated trusted origins for CSRF | `https://localhost` | `https://your-domain.com` |
+| `WEB_CONCURRENCY` | ❌ | Gunicorn worker count | `4` | `4` |
+| `PORT` | ❌ | Port Gunicorn binds to | `8000` | `8000` |
 
 ---
 
@@ -726,6 +848,12 @@ The project provides comprehensive API documentation out of the box using:
 | `GET` | `/{id}/` | Retrieve a single alert |
 | `POST` | `/{id}/resolve/` | Resolve an alert with resolution note |
 
+#### Health — `/api/v1/health/`
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/` | System health check (unauthenticated) |
+
 ---
 
 ## 🔑 Authentication Flow
@@ -737,7 +865,7 @@ The project provides comprehensive API documentation out of the box using:
    → User created (is_verified=False)
    → Raw token generated (secrets.token_urlsafe)
    → Token SHA-256 hashed before DB storage
-   → Verification email sent with raw token link
+   → Verification email sent via Resend API with raw token link
    → Token expires in 24 hours
 
 2. GET /api/v1/accounts/verify-email/?token=<raw_token>
@@ -777,7 +905,7 @@ The project provides comprehensive API documentation out of the box using:
 6. POST /api/v1/accounts/password-reset/
    → Generic response regardless of email existence
    → Reset token generated and hashed (30 min expiry)
-   → Reset email sent with raw token link
+   → Reset email sent via Resend API with raw token link
 
 7. POST /api/v1/accounts/password-reset-confirm/
    → Token validated and expiry checked
@@ -812,13 +940,16 @@ The project provides comprehensive API documentation out of the box using:
 | Serializer | JSON |
 | Soft Time Limit | 300 seconds |
 | Hard Time Limit | 600 seconds |
+| Broker Connection Retry | On startup |
+
+Alert processing occurs **after successful database commit** via `transaction.on_commit()`, preventing race conditions where Celery workers execute before the transaction is committed.
 
 ### Asynchronous Tasks
 
 | Task | App | Trigger | Description |
 |------|-----|---------|-------------|
 | `process_log_for_alerts_task` | monitoring | On log creation (`transaction.on_commit`) | Evaluates alert rules against new log |
-| `dispatch_alert_notifications_task` | alerts | On alert creation/update | Dispatches email/Slack notifications |
+| `dispatch_alert_notifications_task` | alerts | On alert creation/update (`transaction.on_commit`) | Dispatches email notifications via Resend |
 | `cleanup_accounts` | accounts | Celery Beat — every hour | Cleans expired tokens and inactive sessions |
 | `cleanup_monitoring` | monitoring | Celery Beat — daily at 3:00 AM | Deletes logs older than 120 days |
 | `cleanup_alerts_task` | alerts | Celery Beat — daily at 4:00 AM | Deletes resolved alerts older than 90 days |
@@ -854,6 +985,7 @@ The `process_log_for_alerts_task` and `dispatch_alert_notifications_task` implem
 | Secure Cookies | `SESSION_COOKIE_SECURE` and `CSRF_COOKIE_SECURE` (production) |
 | Clickjacking Protection | `X-Frame-Options: DENY` (production) |
 | Content Type Sniffing | `SECURE_CONTENT_TYPE_NOSNIFF` (production) |
+| Proxy SSL | `SECURE_PROXY_SSL_HEADER` for Railway / reverse proxy support |
 | Input Validation | Field-level and object-level serializer validation |
 | Split Settings | Separate dev/prod configurations |
 | Secret Management | All secrets via environment variables (`django-environ`) |
@@ -904,35 +1036,6 @@ User ──┬── EmailVerificationToken (1:N)
 - **Unique constraints** with conditions to enforce business rules (e.g., one active alert per service + type + key)
 - **`select_related`** on all ViewSet querysets to prevent N+1 queries
 - **`select_for_update`** for row-level locking in concurrent alert processing
-
----
-
-## 📋 Logging
-
-### Configuration
-
-AI Ops uses Django's structured logging framework with a standardized format:
-
-```
-[2026-07-20 10:30:00] INFO monitoring: Starting alert processing for log 42
-```
-
-| Logger | Level | Propagate | Purpose |
-|--------|-------|-----------|---------|
-| `root` | INFO | — | Catch-all |
-| `django` | INFO | No | Framework logs |
-| `ai_ops` | INFO | No | Application-wide logs |
-| `monitoring` | INFO | No | Log ingestion and alert engine |
-| `alerts` | INFO | No | Alert lifecycle and notifications |
-
-### What Gets Logged
-
-- User registration, login, logout, email verification
-- Alert rule evaluation (matching rules, cooldown skips, create/update decisions)
-- Notification dispatch (email sent/failed, Slack placeholder)
-- Cleanup task execution (deleted token / session / log / alert counts)
-- Race condition recovery (IntegrityError fallbacks)
-- Celery task start/finish with log and alert IDs
 
 ---
 
@@ -1015,11 +1118,14 @@ The following production practices are already implemented:
 | Background task processing (Celery) | ✅ |
 | Periodic task scheduling (Celery Beat) | ✅ |
 | Redis broker & result backend | ✅ |
+| Resend email delivery | ✅ |
+| Asynchronous notification system | ✅ |
 | Rate limiting (per-endpoint) | ✅ |
 | Environment variable management | ✅ |
 | Split dev/prod settings | ✅ |
 | Production security hardening (HSTS, SSL, secure cookies) | ✅ |
 | Structured logging | ✅ |
+| WhiteNoise static file serving | ✅ |
 | Database indexing & constraints | ✅ |
 | N+1 query prevention | ✅ |
 | Transaction safety (`atomic`, `on_commit`) | ✅ |
@@ -1028,7 +1134,6 @@ The following production practices are already implemented:
 | Retry strategy with exponential backoff | ✅ |
 | Data retention & cleanup automation | ✅ |
 | OpenAPI 3.0 documentation | ✅ |
-| Email notification system | ✅ |
 | HTML email templates | ✅ |
 | Custom Django admin interface | ✅ |
 | Dockerized development environment | ✅ |
@@ -1037,30 +1142,7 @@ The following production practices are already implemented:
 | Docker health checks | ✅ |
 | Health check API endpoint | ✅ |
 | Gunicorn production server | ✅ |
-
----
-
-## 🗺️ Roadmap
-
-The following items track feature progress and future improvements:
-
-- [x] **Docker & Docker Compose** — Containerized development and deployment
-- [x] **Gunicorn** — Production WSGI server configuration
-- [x] **Health Check Endpoint** — Liveness and readiness probes for orchestration
-- [ ] **CI/CD Pipeline** — GitHub Actions or GitLab CI for automated testing and deployment
-- [ ] **Automated Test Suite** — Unit tests, integration tests, and API tests
-- [ ] **Slack Integration** — Complete Slack Incoming Webhooks notification delivery
-- [ ] **WebSocket Support** — Real-time alert streaming via Django Channels
-- [ ] **Monitoring Dashboard** — Frontend dashboard for visualizing service health
-- [ ] **RBAC / Multi-Tenancy** — Organization-scoped access control
-- [ ] **Downtime Detection** — Heartbeat-based service downtime alerting
-- [ ] **Full-Text Search** — PostgreSQL trigram or Elasticsearch for log/alert search
-- [ ] **Static File Serving** — WhiteNoise or CDN integration
-- [ ] **Metrics Export** — Prometheus or StatsD metrics integration
-- [ ] **Kubernetes Deployment** — Container orchestration for production
-- [ ] **Prometheus & Grafana** — Metrics collection and visualization
-- [ ] **OpenTelemetry** — Distributed tracing and observability
-- [ ] **Monitoring Dashboard** — Real-time service health visualization
+| Railway cloud deployment | ✅ |
 
 ---
 
@@ -1100,7 +1182,7 @@ Copyright © 2026 Himanshu Shekhar Das
 ## 👤 Maintainer
 
 | Field | Details |
-|-------|---------|
+|-------|---------:|
 | **Name** | Himanshu Shekhar Das |
 | **GitHub** | [@Him-Anshu26](https://github.com/Him-Anshu26) |
 | **LinkedIn** | [Himanshu Sh. Das](https://linkedin.com/in/himanshu-sh-das) |
@@ -1110,6 +1192,6 @@ Copyright © 2026 Himanshu Shekhar Das
 
 <div align="center">
 
-**Built with Django REST Framework** · **Designed for Production**
+**Built with Django REST Framework** · **Deployed on Railway** · **Designed for Production**
 
 </div>

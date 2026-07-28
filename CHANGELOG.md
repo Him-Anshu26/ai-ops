@@ -5,57 +5,141 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.0] — 2026-07-28
 
 ### Added
-- Docker support with production-grade `Dockerfile` (Python 3.13-slim, Gunicorn, non-root user, layer caching).
-- Docker Compose development configuration (`docker-compose.dev.yml`) with hot-reload via volume mount.
-- Docker Compose production configuration (`docker-compose.prod.yml`) with Gunicorn and baked-in image.
-- PostgreSQL service (`postgres:16-alpine`) with persistent volume and `pg_isready` health check.
-- Redis service (`redis:7-alpine`) with `redis-cli ping` health check.
-- Celery Worker container with graceful shutdown (`stop_grace_period: 30s`).
-- Celery Beat container with graceful shutdown (`stop_grace_period: 30s`).
-- Health Check API endpoint (`GET /api/v1/health/`) with comprehensive subsystem verification.
-- Docker health checks on all infrastructure containers (PostgreSQL, Redis, Django).
-- Health monitoring service (`monitoring.services.health_service`) with application, database, Redis, Celery, and Celery Beat checks.
-- Environment-based Docker configuration with `.env.dev` and `.env.prod` support.
-- Production-ready Docker image with OCI labels, `collectstatic` at build time, and non-root `appuser`.
-- `.dockerignore` to exclude `.git`, `venv`, `.env`, and IDE files from the build context.
-- API testing improvements for health check endpoint.
+
+#### Email System — Resend Migration
+- Migrated production email delivery from Gmail SMTP to the **Resend API** (`resend` Python SDK v2.34.0).
+- `send_email()` utility in `accounts/utils.py` now uses `resend.Emails.send()` for all outbound email.
+- Added `RESEND_API_KEY` environment variable for Resend API authentication.
+- Production email sending for registration verification, password reset, and alert notifications all use Resend.
+
+#### Notification System
+- Implemented a complete asynchronous notification pipeline with clean, layered architecture:
+  - **Alert** → **Celery Task** → **Notification Service** → **Email Service** → **Resend API**
+- `dispatch_alert_notifications_task` Celery task handles asynchronous notification dispatch.
+- `notification_service.py` orchestrates notification providers with per-provider error isolation.
+- `email_service.py` delivers alert emails via the Resend API.
+- Notification tasks dispatched via `transaction.on_commit()` ensuring alerts exist in the database before workers process them.
+- Feature flags `EMAIL_NOTIFICATIONS_ENABLED` and `SLACK_NOTIFICATIONS_ENABLED` toggle notification channels independently.
+- Slack notification placeholder (`slack_service.py`) structured for future Incoming Webhooks integration.
+
+#### Railway Deployment
+- Deployed the application to **Railway** as a multi-service stack:
+  - Django Web (Gunicorn)
+  - PostgreSQL (managed)
+  - Redis (message broker & result backend)
+  - Celery Worker (asynchronous task processing)
+  - Celery Beat (periodic task scheduling)
+- Custom Railway start commands for each service.
+- Redis communicates with Django and Celery over Railway's internal private network.
+- All secrets and configuration managed via Railway's environment variable interface.
+- Health checks via `GET /api/v1/health/` for Railway service monitoring.
+
+#### Static File Serving
+- Integrated **WhiteNoise** (`v6.12.0`) for production static file serving.
+- Configured `CompressedManifestStaticFilesStorage` for cache-busting and Gzip/Brotli compression.
+- WhiteNoise middleware added to the Django middleware stack in `base.py`.
+- `collectstatic` runs during Docker image build so containers serve static files immediately on startup.
+
+#### Health Check Endpoint
+- Production health endpoint at `GET /api/v1/health/` with comprehensive subsystem verification.
+- Health service (`monitoring.services.health_service`) checks: application, database (`SELECT 1`), Redis (`PING`), Celery (broker + worker `inspect().ping()`), and Celery Beat (structured placeholder).
+- Returns HTTP 200 when healthy, HTTP 503 when any subsystem is unhealthy.
+- Unauthenticated — accessible for Docker HEALTHCHECK, Railway probes, and load balancer health checks.
+- Response includes environment, Django version, hostname, API version, uptime, and response time metadata.
+
+#### Notification Screenshots
+- Added notification screenshots under `docs/screenshots/`:
+  - `email-verification-notification.png` — Email verification notification.
+  - `high-latency-alert-notification.png` — High latency alert notification.
+  - `critical-error-alert-notification.png` — Critical error alert notification.
+
+#### Environment Variables
+- Added `RESEND_API_KEY` — Resend API key for production email delivery.
+- Added `EMAIL_PROVIDER` — Email provider identifier (default: `console`).
+- Added `CSRF_TRUSTED_ORIGINS` — Comma-separated trusted origins for CSRF in production.
+- Added `WEB_CONCURRENCY` — Gunicorn worker count (default: `4`).
+- Added `PORT` — Port Gunicorn binds to (default: `8000`).
+- Added `DJANGO_SETTINGS_MODULE` — Settings module path.
 
 ### Changed
-- Email verification endpoint (`verify-email`) now allows unauthenticated verification (`AllowAny`) so token links work without login.
-- Improved Docker health check implementation — uses Python `urllib.request` instead of `wget`/`curl` for zero additional dependencies.
-- Updated container startup sequence — Django and Celery services wait for `db` and `redis` health (`condition: service_healthy`).
-- Improved project documentation (README) with Docker support, project status, and health check sections.
+
+#### Email Migration
+- Replaced Gmail SMTP (`django.core.mail.backends.smtp.EmailBackend`) with Resend API for all production email delivery.
+- Removed `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USE_TLS`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` from required environment variables.
+- `accounts/utils.py` `send_email()` function now uses `resend.Emails.send()` directly instead of Django's `send_mail`.
+
+#### Notification Architecture
+- Alert notification dispatch moved to a clean service layer: Notification Service → Email Service → Resend API.
+- Notification orchestration fully isolated from alert processing — provider failures never interrupt the alert lifecycle.
+
+#### Security Hardening
+- Added `SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")` to production settings for Railway / reverse proxy support.
+
+#### Admin Interface
+- `ServiceAdmin` with bulk status actions (`active`/`down`/`maintenance`) and auto-assigned `created_by`.
+- `AlertAdmin` with bulk lifecycle actions, autocomplete fields, and date hierarchy.
+
+### Improved
+
+#### Docker Configuration
+- Production Docker Compose (`docker-compose.prod.yml`) now includes `static_volume` and `media_volume` for persistent static and media file storage.
+- All services use `restart: unless-stopped` restart policies.
+- All services communicate over a dedicated `ai_ops_network` bridge network.
+- Celery Worker and Celery Beat containers include `stop_grace_period: 30s` for graceful shutdown.
+- Docker health checks use Python's built-in `urllib.request` instead of `wget`/`curl` for zero additional dependencies.
+
+#### Production Dockerfile
+- OCI image labels added (title, description, source, license, vendor, version).
+- `collectstatic` runs at build time with placeholder environment variables so the image is production-ready.
+- Non-root `appuser` with dedicated group for container security.
+- Layer caching optimization — `requirements.txt` copied separately before source code.
+- Python environment variables set: `PYTHONDONTWRITEBYTECODE`, `PYTHONUNBUFFERED`, `PIP_NO_CACHE_DIR`.
+
+#### Celery Integration
+- Celery fully integrated with Redis as broker and result backend.
+- `broker_connection_retry_on_startup = True` for robust startup behavior.
+- Alert processing occurs after successful database commit via `transaction.on_commit()`.
+- Exponential backoff with jitter retry strategy for `ConnectionError` and `DatabaseError`, max 5 retries.
+- Soft time limit (300s) and hard time limit (600s) on all tasks.
+
+#### Structured Logging
+- Standardized log format: `[{asctime}] {levelname} {name}: {message}`.
+- Dedicated loggers: `django`, `ai_ops`, `monitoring`, `alerts` — all at INFO level with no propagation.
+- Comprehensive logging coverage: user lifecycle, alert evaluation, notification dispatch, cleanup tasks, race condition recovery, and Celery task execution.
+
+#### README Documentation
+- Updated badges to `for-the-badge` style with Railway and Resend badges.
+- Added Deployment section documenting Railway multi-service architecture.
+- Rebuilt environment variables section with categorized tables (Core, Database, Celery & Redis, Email/Resend, Notifications, OAuth & URLs, Production).
+- Added notification screenshots to the Notifications section.
+- Updated architecture diagrams to include Notification Service, Email Service, and Resend API.
+- Documented WhiteNoise static file serving configuration.
+- Documented structured logging with logger table and log coverage.
+- Updated Health Check section documenting Docker, Railway, and load balancer probe support.
+- Added Health endpoint to API Endpoints table.
+- Updated Production Readiness table with Resend, Railway, WhiteNoise, and notification system entries.
+- Removed outdated Roadmap items (Kubernetes, Static File Serving — now completed).
+- Updated authentication flow to reference Resend instead of SMTP.
+- Improved overall formatting and recruiter appeal.
 
 ### Fixed
-- Fixed Docker health check failures caused by missing `wget` in slim Python image — replaced with built-in `urllib.request`.
-- Fixed `verify-email` endpoint authentication issue — unauthenticated users can now verify their email via token link.
-- Fixed container health status reporting — health endpoint returns HTTP 503 when any subsystem is unhealthy.
-- Improved Docker startup reliability — `depends_on` with `service_healthy` condition prevents premature service starts.
 
-### Documentation
+- Fixed Docker health check failures caused by missing `wget` in slim Python image — uses built-in `urllib.request`.
+- Fixed container startup reliability — `depends_on` with `service_healthy` condition prevents premature service starts.
+- Race condition in concurrent alert creation resolved with `SELECT FOR UPDATE` row-level locking and `IntegrityError` recovery fallback.
+- `transaction.on_commit()` used for Celery task dispatch to prevent `DoesNotExist` errors when workers execute before transaction commit.
 
-**Added**
-- Comprehensive architecture diagrams
-- Database schema documentation
-- Request flow diagram
-- Swagger screenshots
-- Docker screenshots
-- API documentation screenshots
-- Postman collection
-- Postman environment
-- Expanded README
-- Improved project documentation
-- Added MIT License documentation
+### Infrastructure
 
-**Changed**
-- Updated README to document Docker support
-- Updated project structure
-- Improved documentation navigation
-- Improved setup instructions
-- Improved API documentation section
+- Railway deployment configured with custom start commands for each service.
+- Redis internal networking on Railway for private communication between services.
+- WhiteNoise middleware integrated for zero-dependency static file serving in production.
+- `CompressedManifestStaticFilesStorage` configured for cache-busting static assets.
+- Docker Compose networks (`ai_ops_network`) for service isolation.
+- Production Docker Compose with persistent volumes for PostgreSQL data, static files, and media.
 
 ---
 
@@ -109,7 +193,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Notification Service (`alerts.services`)
 - Provider-isolated notification orchestration with per-provider error handling — provider failures never interrupt alert processing.
-- SMTP-based email notification delivery via Django's `send_mail` with configurable `ALERT_EMAIL_RECIPIENTS`.
+- Email notification delivery with configurable `ALERT_EMAIL_RECIPIENTS`.
 - Structured plain-text email body with alert ID, service name, type, severity, status, message, trigger count, and timestamps.
 - HTML email template (`alert_created.html`) and plain-text fallback (`alert_created.txt`) for alert notifications.
 - `EMAIL_NOTIFICATIONS_ENABLED` and `SLACK_NOTIFICATIONS_ENABLED` feature flags for toggling notification channels.
@@ -146,6 +230,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PostgreSQL as primary database with `psycopg2-binary` adapter.
 - ASGI and WSGI entry points.
 
+#### Docker Support
+- Docker support with production-grade `Dockerfile` (Python 3.13-slim, Gunicorn, non-root user, layer caching).
+- Docker Compose development configuration (`docker-compose.dev.yml`) with hot-reload via volume mount.
+- Docker Compose production configuration (`docker-compose.prod.yml`) with Gunicorn and baked-in image.
+- PostgreSQL service (`postgres:16-alpine`) with persistent volume and `pg_isready` health check.
+- Redis service (`redis:7-alpine`) with `redis-cli ping` health check.
+- Celery Worker container with graceful shutdown (`stop_grace_period: 30s`).
+- Celery Beat container with graceful shutdown (`stop_grace_period: 30s`).
+- Health Check API endpoint (`GET /api/v1/health/`) with comprehensive subsystem verification.
+- Docker health checks on all infrastructure containers (PostgreSQL, Redis, Django).
+- Health monitoring service (`monitoring.services.health_service`) with application, database, Redis, Celery, and Celery Beat checks.
+- Environment-based Docker configuration with `.env.dev` and `.env.prod` support.
+- Production-ready Docker image with OCI labels, `collectstatic` at build time, and non-root `appuser`.
+- `.dockerignore` to exclude `.git`, `venv`, `.env`, and IDE files from the build context.
+
 #### Database Optimizations
 - Composite indexes on `(service, status)`, `(service, created_at)`, `(created_by, status, is_deleted)` for monitoring queries.
 - Composite indexes on `(service, status)`, `(service, alert_type)`, `(service, severity)`, `(status, last_triggered_at)` for alert queries.
@@ -154,6 +253,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `select_related` on all ViewSet querysets to prevent N+1 queries.
 - `select_for_update` for row-level locking in concurrent alert processing.
 - Composite indexes on `(session_id, is_active)` and `(user, is_active)` for session lookups.
+
+#### Documentation
+- Comprehensive architecture diagrams.
+- Database schema documentation.
+- Request flow diagram.
+- Swagger screenshots.
+- Docker screenshots.
+- API documentation screenshots.
+- Postman collection and environment.
+- Expanded README with project documentation.
+- MIT License documentation.
 
 ### Security
 - SHA-256 hashing for all verification, password reset, and refresh tokens before database storage.
@@ -182,6 +292,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Race condition in concurrent alert creation resolved with `SELECT FOR UPDATE` row-level locking and `IntegrityError` recovery fallback.
 - Email normalization (case-insensitive, trimmed) applied consistently across registration, login, verification resend, password reset, and Google OAuth flows to prevent duplicate accounts.
 - `transaction.on_commit()` used for Celery task dispatch to prevent `DoesNotExist` errors when workers execute before transaction commit.
+- Email verification endpoint (`verify-email`) now allows unauthenticated verification (`AllowAny`) so token links work without login.
+- Docker health check failures caused by missing `wget` in slim Python image — replaced with built-in `urllib.request`.
+- Container health status reporting — health endpoint returns HTTP 503 when any subsystem is unhealthy.
+- Docker startup reliability — `depends_on` with `service_healthy` condition prevents premature service starts.
 
 ---
 
@@ -241,7 +355,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/Him-Anshu26/ai-ops/compare/v1.0.0...HEAD
+[2.0.0]: https://github.com/Him-Anshu26/ai-ops/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/Him-Anshu26/ai-ops/compare/v0.2.0...v1.0.0
 [0.2.0]: https://github.com/Him-Anshu26/ai-ops/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Him-Anshu26/ai-ops/releases/tag/v0.1.0
