@@ -49,6 +49,25 @@ Client → DRF API → Views → Service Layer → Models/Database
 
 ---
 
+## 🌐 Live Deployment
+
+The production instance is live on **Railway**:
+
+> **Base URL:** `https://ai-ops-production-himanshu26.up.railway.app`
+
+| Endpoint | Live URL |
+|----------|----------|
+| Health Check | [`/api/v1/health/`](https://ai-ops-production-himanshu26.up.railway.app/api/v1/health/) |
+| Swagger UI | [`/api/v1/docs/`](https://ai-ops-production-himanshu26.up.railway.app/api/v1/docs/) |
+| ReDoc | [`/api/v1/docs/redoc/`](https://ai-ops-production-himanshu26.up.railway.app/api/v1/docs/redoc/) |
+| OpenAPI Schema | [`/api/v1/schema/`](https://ai-ops-production-himanshu26.up.railway.app/api/v1/schema/) |
+| Accounts API | [`/api/v1/accounts/`](https://ai-ops-production-himanshu26.up.railway.app/api/v1/accounts/) |
+| Monitoring API | [`/api/v1/monitoring/`](https://ai-ops-production-himanshu26.up.railway.app/api/v1/monitoring/) |
+| Alerts API | [`/api/v1/alerts/`](https://ai-ops-production-himanshu26.up.railway.app/api/v1/alerts/) |
+| Admin Panel | [`/admin/`](https://ai-ops-production-himanshu26.up.railway.app/admin/) |
+
+---
+
 ## 📌 Project Status
 
 The following capabilities are implemented and operational:
@@ -128,7 +147,7 @@ AI Ops can run entirely using Docker Compose — no local Python, PostgreSQL, or
 ### Containers
 
 | Container | Image | Purpose |
-|-----------|-------|---------:|
+|-----------|-------|---------|
 | `ai_ops_web` | Custom (Dockerfile) | Django development server / Gunicorn (prod) |
 | `ai_ops_db` | `postgres:16-alpine` | PostgreSQL database |
 | `ai_ops_redis` | `redis:7-alpine` | Celery broker & result backend |
@@ -138,7 +157,7 @@ AI Ops can run entirely using Docker Compose — no local Python, PostgreSQL, or
 ### Files
 
 | File | Purpose |
-|------|---------:|
+|------|---------|
 | `Dockerfile` | Production-grade image (Python 3.13-slim, Gunicorn, non-root user) |
 | `docker-compose.dev.yml` | Development stack (runserver, hot-reload via volume mount) |
 | `docker-compose.prod.yml` | Production stack (Gunicorn, no source volume mount) |
@@ -322,7 +341,7 @@ AI Ops uses Django's structured logging framework with a standardized format:
 ```
 
 | Logger | Level | Propagate | Purpose |
-|--------|-------|-----------|---------:|
+|--------|-------|-----------|---------|
 | `root` | INFO | — | Catch-all |
 | `django` | INFO | No | Django framework logs |
 | `ai_ops` | INFO | No | Application-wide logs |
@@ -392,22 +411,38 @@ HTTP Request
 │  Service Layer │ ─── Business logic, orchestration
 └────────┬───────┘
          │
-    ┌────┴────┐
-    ▼         ▼
-┌────────┐ ┌────────────┐
-│ Models │ │   Celery    │ ─── Async alert processing,
-│  (DB)  │ │   Tasks     │     notification dispatch,
-└────────┘ └─────┬──────┘     cleanup jobs
-                 │
-            ┌────┴────┐
-            ▼         ▼
-      ┌──────────┐ ┌───────────────────┐
-      │  Redis    │ │ Notification Svc  │
-      │ (Broker)  │ │   ↓               │
-      └──────────┘ │ Email Service      │
-                   │   ↓               │
-                   │ Resend API        │
-                   └───────────────────┘
+    ┌────┴─────────────────────┐
+    ▼                          ▼
+┌────────┐         ┌─────────────────────┐
+│ Models │         │  transaction.on_commit()
+│  (DB)  │         │         │
+└────────┘         │         ▼
+                   │  ┌──────────────┐
+                   │  │ Celery Task  │ ─── Async alert processing,
+                   │  └──────┬───────┘     notification dispatch,
+                   │         │             cleanup jobs
+                   │         ▼
+                   │  ┌──────────────┐
+                   │  │    Redis     │ ─── Broker + Result Backend
+                   │  │   (Broker)   │
+                   │  └──────┬───────┘
+                   │         │
+                   │         ▼
+                   │  ┌──────────────┐
+                   │  │Celery Worker │
+                   │  └──────┬───────┘
+                   │         │
+                   │         ▼
+                   │  ┌───────────────────┐
+                   │  │ Notification Svc  │
+                   │  │        ↓          │
+                   │  │  Email Service    │
+                   │  │        ↓          │
+                   │  │  Resend API       │
+                   │  └───────────────────┘
+                   └─────────────────────┘
+
+Celery Beat ──→ Redis ──→ Celery Worker ──→ Scheduled Cleanup Tasks
 ```
 
 ### Component Responsibilities
@@ -434,21 +469,25 @@ HTTP Request
 
 AI Ops is deployed to **Railway** as a multi-service application:
 
-| Service | Description |
-|---------|-------------|
-| **Django Web** | Gunicorn WSGI server serving the DRF API |
-| **PostgreSQL** | Managed PostgreSQL database |
-| **Redis** | Message broker and result backend for Celery |
-| **Celery Worker** | Asynchronous task processing (alerts, notifications) |
-| **Celery Beat** | Periodic task scheduler (cleanup jobs) |
+| Service | Runtime | Description |
+|---------|---------|-------------|
+| **Django Web** | Gunicorn | WSGI server binding to `$PORT`, workers configurable via `WEB_CONCURRENCY` |
+| **PostgreSQL** | Managed | Railway-provisioned PostgreSQL instance with automatic backups |
+| **Redis** | Managed | Message broker and result backend, accessible via Railway's internal private network |
+| **Celery Worker** | `celery -A ai_ops worker` | Processes async tasks — alert evaluation, notification dispatch |
+| **Celery Beat** | `celery -A ai_ops beat` | Schedules periodic cleanup tasks (accounts, logs, alerts) |
 
-**Deployment Details:**
+**Infrastructure Details:**
 
-- **Custom Start Commands** — Each Railway service uses a custom start command (e.g., Gunicorn for web, `celery -A ai_ops worker` for worker, `celery -A ai_ops beat` for beat)
-- **Redis Internal Networking** — Redis communicates with Django and Celery services over Railway's internal private network
-- **Environment Variables** — All secrets and configuration are managed via Railway's environment variable interface
-- **Health Checks** — Railway monitors the Django service via `GET /api/v1/health/`
-- **Static Files** — Served via WhiteNoise directly from the Django container (no separate CDN required)
+- **Gunicorn** — Production WSGI server with configurable worker count (`WEB_CONCURRENCY`), binds to Railway's `$PORT`
+- **PostgreSQL** — Managed Railway instance; connection via `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` environment variables
+- **Redis** — Internal private networking between Django, Celery Worker, and Celery Beat; configured via `CELERY_BROKER_URL` and `CELERY_RESULT_BACKEND`
+- **Celery Worker** — Async task processing with exponential backoff retries (max 5), soft time limit 300s, hard time limit 600s
+- **Celery Beat** — Periodic scheduler for accounts cleanup (hourly), log retention (daily 3 AM), alert retention (daily 4 AM)
+- **WhiteNoise** — `CompressedManifestStaticFilesStorage` serves static files with Gzip/Brotli compression and cache-busting hashes; `collectstatic` runs at Docker build time
+- **Resend** — Production email delivery via the `resend` Python SDK; no SMTP server required
+- **Health Checks** — Railway monitors the Django service via `GET /api/v1/health/` (unauthenticated)
+- **Environment Variables** — All secrets and configuration managed via Railway's environment variable interface
 
 ### Docker Compose
 
@@ -456,6 +495,21 @@ For self-hosted deployments, use the provided Docker Compose configurations:
 
 - **Development** — `docker-compose.dev.yml` (Django `runserver`, hot-reload, volume mount)
 - **Production** — `docker-compose.prod.yml` (Gunicorn, static/media volumes, restart policies)
+
+---
+
+## 🏆 Production Highlights
+
+- **Gunicorn** WSGI server with configurable concurrency (`WEB_CONCURRENCY`)
+- **WhiteNoise** compressed static file serving with cache-busting manifests
+- **Celery + Redis** for async task processing and periodic scheduling
+- **Resend API** for transactional email delivery — no SMTP dependency
+- **`transaction.on_commit()`** ensures Celery tasks execute only after successful DB commits
+- **Split settings** (`dev.py` / `prod.py`) with `django-environ` for secret management
+- **Security hardening** — HSTS, SSL redirect, secure cookies, CSRF protection, non-root container
+- **Health check endpoint** for Docker, Railway, and load balancer probes
+- **Alert deduplication** with cooldown windows and row-level locking
+- **Retry strategy** with exponential backoff and jitter on all async tasks
 
 ---
 
@@ -809,11 +863,11 @@ The project provides comprehensive API documentation out of the box using:
 
 ### Interactive Documentation
 
-| URL | Interface |
-|-----|-----------|
-| `/api/v1/docs/` | Swagger UI |
-| `/api/v1/docs/redoc/` | ReDoc |
-| `/api/v1/schema/` | Raw OpenAPI 3.0 JSON schema |
+| URL | Interface | Live Link |
+|-----|-----------|----------|
+| `/api/v1/docs/` | Swagger UI | [Open Swagger](https://ai-ops-production-himanshu26.up.railway.app/api/v1/docs/) |
+| `/api/v1/docs/redoc/` | ReDoc | [Open ReDoc](https://ai-ops-production-himanshu26.up.railway.app/api/v1/docs/redoc/) |
+| `/api/v1/schema/` | Raw OpenAPI 3.0 JSON schema | [Download Schema](https://ai-ops-production-himanshu26.up.railway.app/api/v1/schema/) |
 
 ### API Endpoints
 
@@ -830,6 +884,7 @@ The project provides comprehensive API documentation out of the box using:
 | `POST` | `/password-reset/` | Request password reset email |
 | `POST` | `/password-reset-confirm/` | Reset password with token |
 | `POST` | `/google-login/` | Authenticate via Google ID token |
+| `GET` | `/google-test/` | Google OAuth test page (development) |
 
 #### Monitoring — `/api/v1/monitoring/`
 
@@ -853,6 +908,14 @@ The project provides comprehensive API documentation out of the box using:
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/` | System health check (unauthenticated) |
+
+#### Documentation — `/api/v1/`
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/docs/` | Swagger UI interactive explorer |
+| `GET` | `/docs/redoc/` | ReDoc API documentation |
+| `GET` | `/schema/` | Raw OpenAPI 3.0 JSON schema |
 
 ---
 
@@ -1182,7 +1245,7 @@ Copyright © 2026 Himanshu Shekhar Das
 ## 👤 Maintainer
 
 | Field | Details |
-|-------|---------:|
+|-------|---------|
 | **Name** | Himanshu Shekhar Das |
 | **GitHub** | [@Him-Anshu26](https://github.com/Him-Anshu26) |
 | **LinkedIn** | [Himanshu Sh. Das](https://linkedin.com/in/himanshu-sh-das) |
