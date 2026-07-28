@@ -14,6 +14,11 @@ class CustomUserAdmin(UserAdmin):
 
     readonly_fields = ('created_at', 'updated_at')
 
+    filter_horizontal = (
+            "groups",
+            "user_permissions",
+        )
+
     date_hierarchy = 'created_at'
     
 
@@ -28,14 +33,53 @@ class CustomUserAdmin(UserAdmin):
     # )
 
 
-    fieldsets = UserAdmin.fieldsets + (
-        ('Custom Fields', {
-            'fields': ('is_verified', 'created_at', 'updated_at')
-        }),
+    fieldsets = (
+        (None, {"fields": ("email", "password")}),
+        ("Personal info", {"fields": ("first_name",)}),
+        (
+            "Permissions",
+            {
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                )
+            },
+        ),
+        (
+            "Important dates",
+            {
+                "fields": (
+                    "last_login",
+                    "created_at",
+                    "updated_at",
+                )
+            },
+        ),
+        (
+            "Verification",
+            {
+                "fields": (
+                    "is_verified",
+                )
+            },
+        ),
     )
 
-    add_fieldsets = UserAdmin.add_fieldsets + (
-        (None, {
-            'fields': ('email', 'is_verified')
-        }),
+    add_fieldsets = (
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "email",
+                    "first_name",
+                    "password1",
+                    "password2",
+                    "is_verified",
+                ),
+            },
+        ),
     )
