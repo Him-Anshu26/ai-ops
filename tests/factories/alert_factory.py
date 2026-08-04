@@ -1,37 +1,33 @@
 import factory
 from factory.django import DjangoModelFactory
 
-from alerts.models import Alert
+from alerts.models import (
+    Alert,
+    AlertSeverity,
+    AlertStatus,
+    AlertType,
+)
+
+from tests.factories.log_factory import LogFactory
 from tests.factories.service_factory import ServiceFactory
 
 
 class AlertFactory(DjangoModelFactory):
-    """
-    Factory for alerts.Alert.
-
-    Creates valid alert objects suitable for
-    notification, service-layer and integration tests.
-    """
-
     class Meta:
         model = Alert
 
     service = factory.SubFactory(ServiceFactory)
 
-    severity = Alert.AlertSeverity.WARNING
+    log = factory.SubFactory(LogFactory)
 
-    title = factory.Faker("sentence", nb_words=4)
+    alert_type = AlertType.ERROR
 
-    description = factory.Faker("paragraph")
+    message = factory.Faker("sentence")
 
-    status = Alert.AlertStatus.OPEN
+    alert_key = factory.Sequence(lambda n: f"error-service-{n}")
 
-    triggered_by = factory.Faker("word")
+    severity = AlertSeverity.MEDIUM
 
-    threshold_value = 500
+    status = AlertStatus.OPEN
 
-    observed_value = 620
-
-    cooldown_until = None
-
-    resolved_at = None
+    trigger_count = 1
