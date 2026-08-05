@@ -196,7 +196,6 @@ class VerifyEmailService:
         # Expired token flow
         if is_expired:
 
-            # Delete expired token
             verification.delete()
 
             raise ValueError("Token expired")
@@ -571,7 +570,6 @@ class ResetPasswordService:
         # Expired token flow
         if is_expired:
 
-            # Delete expired token
             reset_token.delete()
 
             raise ValueError("Token expired")
@@ -595,7 +593,13 @@ class ResetPasswordService:
 
         # Delete used reset token
         # One-time usage only
+        print("Deleting reset token:", reset_token.id)
         reset_token.delete()
+        print(
+            PasswordResetToken.objects.filter(
+                id=reset_token.id
+            ).exists()
+        )
 
         logger.info(
             "User password reset successfully",
@@ -776,11 +780,10 @@ class GoogleLoginService :
                 raise ValueError("Account is disabled")
 
             # update provider info if missing
-            if not user.auth_provider:
+            if user.auth_provider != "google":
                 user.auth_provider = "google"
 
-            if not user.provider_id:
-                user.provider_id = google_sub
+            user.provider_id = google_sub
 
             # Google accounts are verified identities
             if not user.is_verified:
