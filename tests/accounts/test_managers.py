@@ -1,10 +1,9 @@
-from django.test import TestCase
-
+import pytest
 from accounts.models import User
 
 
-class UserManagerTests(TestCase):
-
+@pytest.mark.django_db
+class TestUserManager:
     def test_create_user_successfully(self):
         user = User.objects.create_user(
             email="TEST@Example.COM",
@@ -12,24 +11,14 @@ class UserManagerTests(TestCase):
             first_name=" Himanshu ",
         )
 
-        self.assertEqual(
-            user.email,
-            "test@example.com",
-        )
-
-        self.assertTrue(
-            user.check_password("Password@123")
-        )
-
-        self.assertFalse(user.is_staff)
-        self.assertFalse(user.is_superuser)
-        self.assertTrue(user.is_active)
+        assert user.email == "test@example.com"
+        assert user.check_password("Password@123")
+        assert not user.is_staff
+        assert not user.is_superuser
+        assert user.is_active
 
     def test_create_user_without_email_raises_error(self):
-        with self.assertRaisesMessage(
-            ValueError,
-            "Email is required",
-        ):
+        with pytest.raises(ValueError, match="Email is required"):
             User.objects.create_user(
                 email="",
                 password="Password@123",
@@ -41,23 +30,15 @@ class UserManagerTests(TestCase):
             password="Password@123",
         )
 
-        self.assertNotEqual(
-            user.password,
-            "Password@123",
-        )
-
-        self.assertTrue(
-            user.check_password("Password@123")
-        )
+        assert user.password != "Password@123"
+        assert user.check_password("Password@123")
 
     def test_create_user_without_password(self):
         user = User.objects.create_user(
             email="user@example.com",
         )
 
-        self.assertFalse(
-            user.has_usable_password()
-        )
+        assert not user.has_usable_password()
 
     def test_create_superuser_successfully(self):
         admin = User.objects.create_superuser(
@@ -65,21 +46,13 @@ class UserManagerTests(TestCase):
             password="AdminPassword@123",
         )
 
-        self.assertTrue(admin.is_staff)
-        self.assertTrue(admin.is_superuser)
-        self.assertTrue(admin.is_active)
-
-        self.assertTrue(
-            admin.check_password(
-                "AdminPassword@123"
-            )
-        )
+        assert admin.is_staff
+        assert admin.is_superuser
+        assert admin.is_active
+        assert admin.check_password("AdminPassword@123")
 
     def test_create_superuser_requires_is_staff_true(self):
-        with self.assertRaisesMessage(
-            ValueError,
-            "Superuser must have is_staff=True",
-        ):
+        with pytest.raises(ValueError, match="Superuser must have is_staff=True"):
             User.objects.create_superuser(
                 email="admin@example.com",
                 password="AdminPassword@123",
@@ -87,10 +60,7 @@ class UserManagerTests(TestCase):
             )
 
     def test_create_superuser_requires_is_superuser_true(self):
-        with self.assertRaisesMessage(
-            ValueError,
-            "Superuser must have is_superuser=True",
-        ):
+        with pytest.raises(ValueError, match="Superuser must have is_superuser=True"):
             User.objects.create_superuser(
                 email="admin@example.com",
                 password="AdminPassword@123",
@@ -105,7 +75,4 @@ class UserManagerTests(TestCase):
             password="Password@123",
         )
 
-        self.assertEqual(
-            user.email,
-            email.lower(),
-        )
+        assert user.email == email.lower()
