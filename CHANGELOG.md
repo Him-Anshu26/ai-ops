@@ -5,6 +5,91 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] — 2026-08-06
+
+### Added
+
+#### Testing Infrastructure
+- Comprehensive automated test suite built with **pytest** (`v9.1.1`), **pytest-django** (`v4.12.0`), and **pytest-cov** (`v7.1.0`).
+- `pytest.ini` configuration file specifying `DJANGO_SETTINGS_MODULE`, test discovery patterns, and naming conventions.
+- Layered testing architecture: unit tests, API tests, integration tests, and factory self-tests.
+
+#### Test Data Factories (`tests/factories/`)
+- Integrated **factory_boy** (`v3.3.3`) and **Faker** (`v40.36.0`) for declarative test data generation.
+- `UserFactory` — Creates verified, active users with hashed passwords.
+- `ServiceFactory` — Creates monitoring services with auto-generated names and active status.
+- `LogFactory` — Creates monitoring log entries with success status and realistic defaults.
+- `AlertFactory` — Creates alert records with error type, open status, and unique alert keys.
+- `EmailVerificationTokenFactory` — Creates email verification tokens with sequential hashes.
+- `PasswordResetTokenFactory` — Creates password reset tokens with sequential hashes.
+- `UserSessionFactory` — Creates active user sessions with hashed refresh tokens.
+- `test_factories.py` — Self-tests validating all factories produce correct model instances.
+
+#### Shared Fixtures (`tests/conftest.py`)
+- Centralized reusable pytest fixtures: `user`, `another_user`, `service`, `log`, `alert`, `client`, `api_client`, `authenticated_user`, `authenticated_api_client`.
+- App-specific `conftest.py` modules (e.g., `tests/monitoring/conftest.py`) providing URL fixtures and helper utilities.
+
+#### Unit Tests
+- **Accounts** (`tests/accounts/`) — 9 test modules covering models, managers, serializers, services, views, tasks, tokens, URLs, and utilities.
+- **Monitoring** (`tests/monitoring/`) — 11 test modules covering models, serializers, views, tasks, filters, pagination, URLs, alert service, cleanup service, and health service.
+- **Alerts** (`tests/alerts/`) — 9 test modules covering models, serializers, views, tasks, filters, pagination, cleanup service, email service, and notification service.
+
+#### API Tests (`tests/apis/`)
+- End-to-end HTTP request/response tests for all API endpoints.
+- `test_auth.py` — Registration, login, email verification, password reset, token refresh, logout.
+- `test_logs.py` — Log creation, listing, retrieval, filtering, pagination.
+- `test_alerts.py` — Alert creation, listing, retrieval, resolve workflow, filtering, pagination.
+- `test_health.py` — Health check endpoint responses and status codes.
+
+#### Integration Tests (`tests/integration/`)
+- Cross-component workflow tests verifying end-to-end pipelines:
+  - `test_login_workflow.py` — Credentials → session creation → JWT issuance.
+  - `test_email_verification_workflow.py` — Registration → token generation → email verification → verified status.
+  - `test_password_reset_workflow.py` — Reset request → token → password change → session invalidation.
+  - `test_log_to_alert.py` — Log ingestion → alert rule evaluation → alert creation/deduplication.
+  - `test_alert_notification.py` — Alert creation → Celery task → notification dispatch (email, Slack).
+  - `test_monitoring_pipeline.py` — Monitoring API → Celery pipeline handoff.
+  - `test_health_monitoring.py` — Health check orchestrator → subsystem verification.
+  - `test_permission_workflow.py` — Global permission boundaries (authenticated vs. unauthenticated access).
+
+#### Coverage Reporting
+- **coverage** (`v7.15.3`) integrated for code coverage measurement.
+- Coverage reports generated via `pytest --cov` with support for terminal, HTML, and text output.
+
+#### Testing Documentation
+- `docs/testing/` — 23 screenshots documenting test execution: all tests passing, per-app unit test results, API tests, integration tests, coverage reports, pytest installation, factory_boy installation, fixture loading, and test directory structure.
+- `docs/testing_reports/` — 6 text-based reports: `accounts-unit-test.txt`, `monitoring-unit-test.txt`, `alerts-unit-test.txt`, `api-tests-reports.txt`, `integration-tests-report.txt`, `coverage-report.txt`.
+
+### Changed
+
+#### README Documentation
+- Replaced outdated "no tests" notice with comprehensive testing section documenting architecture, factories, fixtures, unit/API/integration tests, commands, coverage, and reports.
+- Updated project structure tree to include `tests/` directory with all subdirectories and test files.
+- Added `docs/testing/` and `docs/testing_reports/` to project structure and documentation assets.
+- Added `docs/api/` (OpenAPI YAML) to project structure and documentation assets.
+- Added `pytest.ini` to project structure.
+- Updated project status table with testing capabilities (test suite, factories, unit tests, API tests, integration tests, coverage).
+- Updated production readiness table with testing entries.
+- Added testing dependencies (pytest, pytest-django, pytest-cov, factory_boy, Faker, coverage) to tech stack.
+- Updated contributing guidelines with testing requirements (`pytest -v`).
+
+#### CHANGELOG
+- Added `[2.1.0]` release documenting complete testing infrastructure evolution.
+
+### Dependencies
+
+- Added `pytest==9.1.1` — Test runner.
+- Added `pytest-django==4.12.0` — Django integration for pytest.
+- Added `pytest-cov==7.1.0` — Coverage plugin for pytest.
+- Added `factory_boy==3.3.3` — Declarative test data factories.
+- Added `Faker==40.36.0` — Realistic fake data generation.
+- Added `coverage==7.15.3` — Code coverage measurement.
+- Added `iniconfig==2.3.0` — INI file configuration parsing (pytest dependency).
+- Added `pluggy==1.6.0` — Plugin management framework (pytest dependency).
+
+---
+
+
 ## [2.0.0] — 2026-07-28
 
 ### Added
@@ -355,6 +440,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[2.1.0]: https://github.com/Him-Anshu26/ai-ops/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/Him-Anshu26/ai-ops/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/Him-Anshu26/ai-ops/compare/v0.2.0...v1.0.0
 [0.2.0]: https://github.com/Him-Anshu26/ai-ops/compare/v0.1.0...v0.2.0

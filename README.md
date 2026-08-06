@@ -101,26 +101,33 @@ The following capabilities are implemented and operational:
 | Environment Configuration | ✅ |
 | Custom User Model | ✅ |
 | Production-grade Project Structure | ✅ |
+| Comprehensive Test Suite (pytest) | ✅ |
+| Factory-based Test Data (factory_boy) | ✅ |
+| Unit Tests | ✅ |
+| API Tests | ✅ |
+| Integration Tests | ✅ |
+| Code Coverage Reporting | ✅ |
 
 ---
 
 ## 📚 Documentation
 
 The project includes comprehensive documentation resources:
-- **API Documentation**
-- **Swagger UI**
-- **ReDoc**
-- **OpenAPI Schema**
-- **Postman Collection**
-- **Postman Environment**
-- **Architecture Diagrams**
+- **API Documentation** — Swagger UI, ReDoc, OpenAPI Schema
+- **Postman Collection** — Ready-to-import API collection
+- **Architecture Diagrams** — System architecture, database schema, request flow
+- **Testing Documentation** — Screenshots of test execution and coverage reports
+- **Testing Reports** — Text-based pytest and coverage output
 
-Example documentation structure:
+Documentation structure:
 ```
 docs/
-├── architecture/
-├── postman/
-└── screenshots/
+├── api/                  # OpenAPI schema (YAML)
+├── architecture/         # Architecture diagrams
+├── postman/              # Postman collection
+├── screenshots/          # Application screenshots
+├── testing/              # Testing screenshots (unit, API, integration, coverage)
+└── testing_reports/      # Text-based pytest and coverage reports
 ```
 
 ---
@@ -132,9 +139,12 @@ docs/
 | Swagger UI | `/api/v1/docs/` |
 | ReDoc | `/api/v1/docs/redoc/` |
 | OpenAPI Schema | `/api/v1/schema/` |
-| Architecture | `docs/architecture` |
-| Screenshots | `docs/screenshots` |
-| Postman Collection | `docs/postman` |
+| OpenAPI YAML | `docs/api/openapi.yaml` |
+| Architecture | `docs/architecture/` |
+| Screenshots | `docs/screenshots/` |
+| Postman Collection | `docs/postman/` |
+| Testing Screenshots | `docs/testing/` |
+| Testing Reports | `docs/testing_reports/` |
 | Docker Compose (Dev) | `docker-compose.dev.yml` |
 | Docker Compose (Prod) | `docker-compose.prod.yml` |
 
@@ -571,6 +581,17 @@ For self-hosted deployments, use the provided Docker Compose configurations:
 | django-extensions | 4.1 | Development utilities |
 | psycopg2-binary | 2.9.10 | PostgreSQL adapter |
 
+### Testing
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| pytest | 9.1.1 | Test runner |
+| pytest-django | 4.12.0 | Django integration for pytest |
+| pytest-cov | 7.1.0 | Coverage plugin for pytest |
+| factory_boy | 3.3.3 | Test data factories |
+| Faker | 40.36.0 | Realistic fake data generation |
+| coverage | 7.15.3 | Code coverage measurement |
+
 ---
 
 ## 📁 Project Structure
@@ -641,20 +662,81 @@ ai_ops/
 │   │   └── alert_created.txt  # Plain-text alert notification template
 │   └── urls.py                # Alert URL routes
 │
+├── tests/                     # Comprehensive test suite
+│   ├── conftest.py            # Shared fixtures (user, service, log, alert, api_client)
+│   ├── factories/             # factory_boy test data factories
+│   │   ├── user_factory.py
+│   │   ├── service_factory.py
+│   │   ├── log_factory.py
+│   │   ├── alert_factory.py
+│   │   ├── token_factory.py
+│   │   ├── session_factory.py
+│   │   └── test_factories.py  # Factory self-tests
+│   ├── accounts/              # Accounts unit tests
+│   │   ├── test_models.py
+│   │   ├── test_managers.py
+│   │   ├── test_serializers.py
+│   │   ├── test_services.py
+│   │   ├── test_views.py
+│   │   ├── test_tasks.py
+│   │   ├── test_tokens.py
+│   │   ├── test_urls.py
+│   │   └── test_utils.py
+│   ├── monitoring/            # Monitoring unit tests
+│   │   ├── conftest.py
+│   │   ├── test_models.py
+│   │   ├── test_serializers.py
+│   │   ├── test_views.py
+│   │   ├── test_tasks.py
+│   │   ├── test_filters.py
+│   │   ├── test_pagination.py
+│   │   ├── test_urls.py
+│   │   ├── test_alert_service.py
+│   │   ├── test_cleanup_service.py
+│   │   └── test_health_service.py
+│   ├── alerts/                # Alerts unit tests
+│   │   ├── test_models.py
+│   │   ├── test_serializers.py
+│   │   ├── test_views.py
+│   │   ├── test_tasks.py
+│   │   ├── test_filters.py
+│   │   ├── test_pagination.py
+│   │   ├── test_cleanup_service.py
+│   │   ├── test_email_service.py
+│   │   └── test_notification_service.py
+│   ├── apis/                  # End-to-end API tests
+│   │   ├── test_auth.py
+│   │   ├── test_logs.py
+│   │   ├── test_alerts.py
+│   │   └── test_health.py
+│   └── integration/           # Integration workflow tests
+│       ├── test_login_workflow.py
+│       ├── test_email_verification_workflow.py
+│       ├── test_password_reset_workflow.py
+│       ├── test_log_to_alert.py
+│       ├── test_alert_notification.py
+│       ├── test_monitoring_pipeline.py
+│       ├── test_health_monitoring.py
+│       └── test_permission_workflow.py
+│
 ├── templates/
 │   └── google_login_test/
 │       └── google_test.html   # Google OAuth test page
 │
 ├── docs/
+│   ├── api/                   # OpenAPI schema (YAML)
 │   ├── architecture/          # Architecture diagrams
-│   ├── postman/               # Postman collection & environment
-│   └── screenshots/           # Application screenshots
+│   ├── postman/               # Postman collection
+│   ├── screenshots/           # Application screenshots
+│   ├── testing/               # Testing screenshots
+│   └── testing_reports/       # Pytest & coverage text reports
 │
 ├── Dockerfile                 # Production-grade Docker image
 ├── docker-compose.dev.yml     # Development Docker Compose stack
 ├── docker-compose.prod.yml    # Production Docker Compose stack
 ├── .dockerignore              # Docker build context exclusions
 ├── manage.py                  # Django management script
+├── pytest.ini                 # Pytest configuration
 ├── requirements.txt           # Python dependencies
 ├── .env.example               # Environment variable template
 ├── LICENSE                    # MIT License
@@ -1160,9 +1242,227 @@ User ──┬── EmailVerificationToken (1:N)
 
 ---
 
-## 🧪 Running Tests
+## 🧪 Testing
 
-> **Note:** Automated tests have not yet been added to this project. Test files exist but are currently empty. Manual testing is supported through the Swagger UI at `/api/v1/docs/` and the Django admin at `/admin/`.
+AI Ops includes a comprehensive automated test suite built with **pytest**, **pytest-django**, and **factory_boy**.
+
+### Testing Architecture
+
+The test suite follows a layered testing strategy:
+
+```
+tests/
+├── conftest.py            # Shared fixtures (user, service, log, alert, api_client)
+├── factories/             # factory_boy test data factories
+├── accounts/              # Accounts unit tests (models, services, views, serializers, tasks, etc.)
+├── monitoring/            # Monitoring unit tests (models, views, filters, pagination, services, etc.)
+├── alerts/                # Alerts unit tests (models, views, filters, pagination, services, etc.)
+├── apis/                  # End-to-end API tests (auth, logs, alerts, health)
+└── integration/           # Cross-component integration workflow tests
+```
+
+| Layer | Purpose | Location |
+|-------|---------|----------|
+| **Unit Tests** | Test individual components in isolation (models, serializers, services, tasks, filters, pagination, URLs, views) | `tests/accounts/`, `tests/monitoring/`, `tests/alerts/` |
+| **API Tests** | Test complete HTTP request/response cycles against all API endpoints | `tests/apis/` |
+| **Integration Tests** | Test cross-component workflows end-to-end | `tests/integration/` |
+| **Factory Tests** | Validate factory_boy factories produce correct test data | `tests/factories/test_factories.py` |
+
+### Testing Stack
+
+| Tool | Purpose |
+|------|---------|
+| `pytest` | Test runner with auto-discovery and rich assertion introspection |
+| `pytest-django` | Django integration — database access, settings overrides, live server |
+| `pytest-cov` | Coverage measurement plugin for pytest |
+| `factory_boy` | Declarative test data factories (replaces manual fixture setup) |
+| `Faker` | Realistic fake data generation for factory fields |
+| `coverage` | Code coverage analysis and reporting |
+
+### Test Data Factories
+
+All test data is generated via `factory_boy` factories located in `tests/factories/`:
+
+| Factory | Model | Key Defaults |
+|---------|-------|--------------|
+| `UserFactory` | `accounts.User` | Verified, active, `Password@123` |
+| `ServiceFactory` | `monitoring.Service` | Active status, auto-generated name |
+| `LogFactory` | `monitoring.Log` | Success status, 200 status code, 150ms response |
+| `AlertFactory` | `alerts.Alert` | Error type, open status, medium severity |
+| `EmailVerificationTokenFactory` | `accounts.EmailVerificationToken` | Sequential token hashes |
+| `PasswordResetTokenFactory` | `accounts.PasswordResetToken` | Sequential token hashes |
+| `UserSessionFactory` | `accounts.UserSession` | Active session with hashed refresh token |
+
+### Shared Fixtures
+
+Reusable pytest fixtures are centralized in `tests/conftest.py`:
+
+| Fixture | Description |
+|---------|-------------|
+| `user` | Creates a verified, active user via `UserFactory` |
+| `another_user` | Creates a second user for multi-user tests |
+| `service` | Creates a monitoring service via `ServiceFactory` |
+| `log` | Creates a monitoring log entry via `LogFactory` |
+| `alert` | Creates an alert via `AlertFactory` |
+| `client` | Django test `Client` instance |
+| `api_client` | DRF `APIClient` instance (unauthenticated) |
+| `authenticated_user` | Alias for `user` fixture |
+| `authenticated_api_client` | DRF `APIClient` with `force_authenticate` |
+
+App-specific fixtures (e.g., `tests/monitoring/conftest.py`) provide additional helpers like URL fixtures and log creation utilities.
+
+### Unit Tests
+
+Each Django app has comprehensive unit tests covering:
+
+**Accounts** (`tests/accounts/`) — 9 test modules:
+- `test_models.py` — User, token, and session model behavior
+- `test_managers.py` — Custom `UserManager` creation methods
+- `test_serializers.py` — Serializer validation and output formatting
+- `test_services.py` — Authentication business logic (register, login, verify, reset, Google OAuth)
+- `test_views.py` — View layer HTTP responses and error handling
+- `test_tasks.py` — Celery cleanup task execution
+- `test_tokens.py` — JWT token generation and decoding
+- `test_urls.py` — URL routing and resolution
+- `test_utils.py` — Token hashing and email sending utilities
+
+**Monitoring** (`tests/monitoring/`) — 11 test modules:
+- `test_models.py` — Service and Log model behavior, constraints, indexes
+- `test_serializers.py` — Read/write serializer validation
+- `test_views.py` — LogViewSet and HealthCheckAPIView responses
+- `test_tasks.py` — Celery alert processing and cleanup tasks
+- `test_filters.py` — Log filtering (status, service, time range, response time, message search)
+- `test_pagination.py` — Cursor-based pagination behavior
+- `test_urls.py` — URL routing and resolution
+- `test_alert_service.py` — Alert rule engine (error detection, latency detection, deduplication, cooldown)
+- `test_cleanup_service.py` — Log retention cleanup logic
+- `test_health_service.py` — Health check orchestrator (application, database, Redis, Celery, Beat)
+
+**Alerts** (`tests/alerts/`) — 9 test modules:
+- `test_models.py` — Alert model behavior, lifecycle, constraints
+- `test_serializers.py` — Read/write/resolve serializer validation
+- `test_views.py` — AlertViewSet CRUD and resolve workflow
+- `test_tasks.py` — Celery notification dispatch and cleanup tasks
+- `test_filters.py` — Alert filtering (status, type, severity, time ranges, trigger count, message)
+- `test_pagination.py` — Cursor-based pagination behavior
+- `test_cleanup_service.py` — Resolved alert cleanup logic
+- `test_email_service.py` — Resend email delivery for alert notifications
+- `test_notification_service.py` — Notification orchestrator (provider isolation, feature flags)
+
+### API Tests
+
+End-to-end API tests in `tests/apis/` validate complete HTTP request/response cycles:
+
+| Test Module | Endpoints Tested |
+|-------------|------------------|
+| `test_auth.py` | Registration, login, email verification, password reset, refresh, logout |
+| `test_logs.py` | Log creation, listing, retrieval, filtering, pagination |
+| `test_alerts.py` | Alert creation, listing, retrieval, resolve workflow, filtering, pagination |
+| `test_health.py` | Health check endpoint responses |
+
+Endpoints are tested for:
+- ✔ Authentication and authorization
+- ✔ Input validation and error responses
+- ✔ Permission enforcement (authenticated vs. unauthenticated)
+- ✔ Success and failure cases
+- ✔ Pagination and cursor navigation
+- ✔ Filtering with query parameters
+- ✔ CRUD operations
+- ✔ Health endpoint availability
+
+### Integration Tests
+
+Cross-component workflow tests in `tests/integration/` verify end-to-end pipelines:
+
+| Test Module | Workflow |
+|-------------|----------|
+| `test_login_workflow.py` | Full login flow: credentials → session creation → JWT issuance |
+| `test_email_verification_workflow.py` | Registration → token generation → email verification → verified status |
+| `test_password_reset_workflow.py` | Reset request → token → password change → session invalidation |
+| `test_log_to_alert.py` | Log ingestion → alert rule evaluation → alert creation/deduplication |
+| `test_alert_notification.py` | Alert creation → Celery task → notification dispatch (email, Slack) |
+| `test_monitoring_pipeline.py` | Monitoring API → Celery pipeline handoff |
+| `test_health_monitoring.py` | Health check orchestrator → subsystem verification |
+| `test_permission_workflow.py` | Global permission boundaries (authenticated vs. unauthenticated access) |
+
+### Test Commands
+
+```bash
+# Run all tests
+pytest -v
+
+# Run accounts tests
+pytest tests/accounts/ -v
+
+# Run monitoring tests
+pytest tests/monitoring/ -v
+
+# Run alerts tests
+pytest tests/alerts/ -v
+
+# Run API tests
+pytest tests/apis/ -v
+
+# Run integration tests
+pytest tests/integration/ -v
+
+# Run factory tests
+pytest tests/factories/ -v
+
+# Run tests with coverage
+pytest --cov=accounts --cov=monitoring --cov=alerts -v
+
+# Generate HTML coverage report
+pytest --cov=accounts --cov=monitoring --cov=alerts --cov-report=html -v
+
+# Generate terminal coverage report
+pytest --cov=accounts --cov=monitoring --cov=alerts --cov-report=term-missing -v
+```
+
+### Pytest Configuration
+
+The project uses `pytest.ini` for test configuration:
+
+```ini
+[pytest]
+DJANGO_SETTINGS_MODULE = ai_ops.settings.dev
+python_files = tests.py test_*.py *_tests.py
+python_classes = Test*
+python_functions = test_*
+```
+
+### Test Reports & Evidence
+
+Test execution evidence is preserved in the `docs/` directory:
+
+**`docs/testing_reports/`** — Text-based test and coverage reports:
+
+| Report | Contents |
+|--------|---------|
+| `accounts-unit-test.txt` | Accounts unit test execution output |
+| `monitoring-unit-test.txt` | Monitoring unit test execution output |
+| `alerts-unit-test.txt` | Alerts unit test execution output |
+| `api-tests-reports.txt` | API test execution output |
+| `integration-tests-report.txt` | Integration test execution output |
+| `coverage-report.txt` | Full coverage report with line-by-line analysis |
+
+**`docs/testing/`** — Screenshots demonstrating successful test execution:
+
+| Screenshot | Evidence |
+|------------|----------|
+| `all_tests_passed.png` | Full test suite passing |
+| `accounts_unit_test_part1.png`, `part2.png` | Accounts unit test results |
+| `monitoring_unit_test_part1.png`, `part2.png` | Monitoring unit test results |
+| `alerts_unit_test_part1.png`, `part2.png` | Alerts unit test results |
+| `api_tests_part1.png`, `part2.png` | API test results |
+| `integration_tests_passed_part1.png`, `part2.png` | Integration test results |
+| `coverage_report_01.png` – `06.png` | Coverage report screenshots |
+| `pytest-installed.png` | pytest installation verification |
+| `factory-boy-installed.png` | factory_boy installation verification |
+| `factoryboy-tests-passed.png` | Factory test results |
+| `fixtures-loaded.png` | Shared fixture loading verification |
+| `testing-directory-structure.png` | Test directory structure |
+| `pytest-initial-run.png` | Initial pytest configuration run |
 
 ---
 
@@ -1206,6 +1506,10 @@ The following production practices are already implemented:
 | Health check API endpoint | ✅ |
 | Gunicorn production server | ✅ |
 | Railway cloud deployment | ✅ |
+| Comprehensive pytest test suite | ✅ |
+| factory_boy test data factories | ✅ |
+| Unit / API / Integration tests | ✅ |
+| Code coverage reporting | ✅ |
 
 ---
 
@@ -1221,8 +1525,12 @@ Contributions are welcome! Please follow these guidelines:
 3. **Follow existing patterns** — service layer, serializer separation, schema decorators.
 4. **Write clear commit messages** — use conventional commits where possible.
 5. **Add or update OpenAPI schemas** for any new endpoints.
-6. **Test your changes** — ensure the application runs and API responses are correct.
-7. **Submit a Pull Request** with a clear description of the changes.
+6. **Write tests** — add unit tests for new services and models, API tests for new endpoints.
+7. **Run the test suite** — ensure all tests pass before submitting:
+   ```bash
+   pytest -v
+   ```
+8. **Submit a Pull Request** with a clear description of the changes.
 
 ### Code Style
 
