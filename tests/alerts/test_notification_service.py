@@ -1,21 +1,14 @@
 from unittest.mock import patch
-
-from django.test import TestCase, override_settings
-
-from django.test import (
-    TestCase,
-    override_settings,
-)
+import pytest
+from django.test import override_settings
 
 from alerts.models import (
     AlertSeverity,
     AlertType,
 )
-
 from alerts.services.notification_service import (
     dispatch_alert_notifications,
 )
-
 from tests.factories import AlertFactory
 
 
@@ -24,7 +17,8 @@ from tests.factories import AlertFactory
 # ============================================================
 
 
-class NotificationEmailTests(TestCase):
+@pytest.mark.django_db
+class TestNotificationEmail:
     """
     Tests covering the email notification workflow.
     """
@@ -41,12 +35,8 @@ class NotificationEmailTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         dispatch_alert_notifications(alert)
-
-        mock_send_email.assert_called_once_with(
-            alert,
-        )
+        mock_send_email.assert_called_once_with(alert)
 
     @override_settings(
         EMAIL_NOTIFICATIONS_ENABLED=False,
@@ -60,9 +50,7 @@ class NotificationEmailTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         dispatch_alert_notifications(alert)
-
         mock_send_email.assert_not_called()
 
     @override_settings(
@@ -77,9 +65,7 @@ class NotificationEmailTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         dispatch_alert_notifications(alert)
-
         mock_logger.info.assert_any_call(
             "Dispatching email notification for alert %s",
             alert.id,
@@ -97,9 +83,7 @@ class NotificationEmailTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         dispatch_alert_notifications(alert)
-
         mock_logger.info.assert_any_call(
             "Email notification dispatched for alert %s",
             alert.id,
@@ -117,12 +101,8 @@ class NotificationEmailTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         dispatch_alert_notifications(alert)
-
-        mock_logger.info.assert_any_call(
-            "Email notifications are disabled.",
-        )
+        mock_logger.info.assert_any_call("Email notifications are disabled.")
 
     @override_settings(
         EMAIL_NOTIFICATIONS_ENABLED=True,
@@ -136,13 +116,8 @@ class NotificationEmailTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         dispatch_alert_notifications(alert)
-
-        self.assertEqual(
-            mock_send_email.call_count,
-            1,
-        )
+        assert mock_send_email.call_count == 1
 
     @override_settings(
         EMAIL_NOTIFICATIONS_ENABLED=True,
@@ -156,15 +131,9 @@ class NotificationEmailTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         dispatch_alert_notifications(alert)
-
         sent_alert = mock_send_email.call_args.args[0]
-
-        self.assertIs(
-            sent_alert,
-            alert,
-        )
+        assert sent_alert is alert
 
 
 # ============================================================
@@ -172,7 +141,8 @@ class NotificationEmailTests(TestCase):
 # ============================================================
 
 
-class NotificationSlackTests(TestCase):
+@pytest.mark.django_db
+class TestNotificationSlack:
     """
     Tests covering the Slack notification workflow.
     """
@@ -189,12 +159,8 @@ class NotificationSlackTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         dispatch_alert_notifications(alert)
-
-        mock_send_slack.assert_called_once_with(
-            alert,
-        )
+        mock_send_slack.assert_called_once_with(alert)
 
     @override_settings(
         EMAIL_NOTIFICATIONS_ENABLED=False,
@@ -208,9 +174,7 @@ class NotificationSlackTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         dispatch_alert_notifications(alert)
-
         mock_send_slack.assert_not_called()
 
     @override_settings(
@@ -225,9 +189,7 @@ class NotificationSlackTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         dispatch_alert_notifications(alert)
-
         mock_logger.info.assert_any_call(
             "Dispatching Slack notification for alert %s",
             alert.id,
@@ -245,9 +207,7 @@ class NotificationSlackTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         dispatch_alert_notifications(alert)
-
         mock_logger.info.assert_any_call(
             "Slack notification dispatched for alert %s",
             alert.id,
@@ -265,12 +225,8 @@ class NotificationSlackTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         dispatch_alert_notifications(alert)
-
-        mock_logger.info.assert_any_call(
-            "Slack notifications are disabled.",
-        )
+        mock_logger.info.assert_any_call("Slack notifications are disabled.")
 
     @override_settings(
         EMAIL_NOTIFICATIONS_ENABLED=False,
@@ -284,13 +240,8 @@ class NotificationSlackTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         dispatch_alert_notifications(alert)
-
-        self.assertEqual(
-            mock_send_slack.call_count,
-            1,
-        )
+        assert mock_send_slack.call_count == 1
 
     @override_settings(
         EMAIL_NOTIFICATIONS_ENABLED=False,
@@ -304,23 +255,18 @@ class NotificationSlackTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         dispatch_alert_notifications(alert)
-
         sent_alert = mock_send_slack.call_args.args[0]
-
-        self.assertIs(
-            sent_alert,
-            alert,
-        )
-
+        assert sent_alert is alert
 
 
 # ============================================================
 # Email Failure
 # ============================================================
 
-class NotificationEmailFailureTests(TestCase):
+
+@pytest.mark.django_db
+class TestNotificationEmailFailure:
     """
     Email failures should never stop notification dispatch.
     """
@@ -337,14 +283,9 @@ class NotificationEmailFailureTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
+        mock_send_email.side_effect = Exception("SMTP failure")
 
-        mock_send_email.side_effect = Exception(
-            "SMTP failure"
-        )
-
-        dispatch_alert_notifications(
-            alert,
-        )
+        dispatch_alert_notifications(alert)
 
         mock_logger.exception.assert_called_once_with(
             "Failed to send email notification for alert %s",
@@ -363,12 +304,9 @@ class NotificationEmailFailureTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         mock_send_email.side_effect = RuntimeError()
 
-        dispatch_alert_notifications(
-            alert,
-        )
+        dispatch_alert_notifications(alert)
 
     @override_settings(
         EMAIL_NOTIFICATIONS_ENABLED=True,
@@ -382,12 +320,9 @@ class NotificationEmailFailureTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         mock_send_email.side_effect = Exception()
 
-        dispatch_alert_notifications(
-            alert,
-        )
+        dispatch_alert_notifications(alert)
 
         mock_logger.info.assert_any_call(
             "Finished notification dispatch for alert %s",
@@ -399,7 +334,9 @@ class NotificationEmailFailureTests(TestCase):
 # Slack Failure
 # ============================================================
 
-class NotificationSlackFailureTests(TestCase):
+
+@pytest.mark.django_db
+class TestNotificationSlackFailure:
     """
     Slack failures should never stop execution.
     """
@@ -416,12 +353,9 @@ class NotificationSlackFailureTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         mock_send_slack.side_effect = Exception()
 
-        dispatch_alert_notifications(
-            alert,
-        )
+        dispatch_alert_notifications(alert)
 
         mock_logger.exception.assert_called_once_with(
             "Failed to send Slack notification for alert %s",
@@ -440,12 +374,9 @@ class NotificationSlackFailureTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         mock_send_slack.side_effect = RuntimeError()
 
-        dispatch_alert_notifications(
-            alert,
-        )
+        dispatch_alert_notifications(alert)
 
     @override_settings(
         EMAIL_NOTIFICATIONS_ENABLED=False,
@@ -459,12 +390,9 @@ class NotificationSlackFailureTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         mock_send_slack.side_effect = Exception()
 
-        dispatch_alert_notifications(
-            alert,
-        )
+        dispatch_alert_notifications(alert)
 
         mock_logger.info.assert_any_call(
             "Finished notification dispatch for alert %s",
@@ -476,7 +404,9 @@ class NotificationSlackFailureTests(TestCase):
 # Both Providers Fail
 # ============================================================
 
-class NotificationBothProvidersFailureTests(TestCase):
+
+@pytest.mark.django_db
+class TestNotificationBothProvidersFailure:
     """
     Both providers fail independently.
     """
@@ -495,18 +425,12 @@ class NotificationBothProvidersFailureTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         mock_send_email.side_effect = Exception()
         mock_send_slack.side_effect = Exception()
 
-        dispatch_alert_notifications(
-            alert,
-        )
+        dispatch_alert_notifications(alert)
 
-        self.assertEqual(
-            mock_logger.exception.call_count,
-            2,
-        )
+        assert mock_logger.exception.call_count == 2
 
     @override_settings(
         EMAIL_NOTIFICATIONS_ENABLED=True,
@@ -522,13 +446,10 @@ class NotificationBothProvidersFailureTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         mock_send_email.side_effect = Exception()
         mock_send_slack.side_effect = Exception()
 
-        dispatch_alert_notifications(
-            alert,
-        )
+        dispatch_alert_notifications(alert)
 
         mock_logger.info.assert_any_call(
             "Finished notification dispatch for alert %s",
@@ -540,7 +461,9 @@ class NotificationBothProvidersFailureTests(TestCase):
 # Edge Cases
 # ============================================================
 
-class NotificationServiceEdgeCaseTests(TestCase):
+
+@pytest.mark.django_db
+class TestNotificationServiceEdgeCase:
     """
     Miscellaneous edge cases.
     """
@@ -551,33 +474,18 @@ class NotificationServiceEdgeCaseTests(TestCase):
     )
     @patch("alerts.services.notification_service.send_slack_notification")
     @patch("alerts.services.notification_service.send_alert_email")
+    @pytest.mark.parametrize("alert_type", AlertType.values)
     def test_dispatch_accepts_all_alert_types(
         self,
         mock_send_email,
         mock_send_slack,
+        alert_type,
     ):
-        for alert_type in AlertType.values:
+        alert = AlertFactory(alert_type=alert_type)
+        dispatch_alert_notifications(alert)
 
-            with self.subTest(
-                alert_type=alert_type,
-            ):
-                alert = AlertFactory(
-                    alert_type=alert_type,
-                )
-
-                dispatch_alert_notifications(
-                    alert,
-                )
-
-        self.assertEqual(
-            mock_send_email.call_count,
-            len(AlertType.values),
-        )
-
-        self.assertEqual(
-            mock_send_slack.call_count,
-            len(AlertType.values),
-        )
+        mock_send_email.assert_called_once()
+        mock_send_slack.assert_called_once()
 
     @override_settings(
         EMAIL_NOTIFICATIONS_ENABLED=True,
@@ -585,33 +493,18 @@ class NotificationServiceEdgeCaseTests(TestCase):
     )
     @patch("alerts.services.notification_service.send_slack_notification")
     @patch("alerts.services.notification_service.send_alert_email")
+    @pytest.mark.parametrize("severity", AlertSeverity.values)
     def test_dispatch_accepts_all_severities(
         self,
         mock_send_email,
         mock_send_slack,
+        severity,
     ):
-        for severity in AlertSeverity.values:
+        alert = AlertFactory(severity=severity)
+        dispatch_alert_notifications(alert)
 
-            with self.subTest(
-                severity=severity,
-            ):
-                alert = AlertFactory(
-                    severity=severity,
-                )
-
-                dispatch_alert_notifications(
-                    alert,
-                )
-
-        self.assertEqual(
-            mock_send_email.call_count,
-            len(AlertSeverity.values),
-        )
-
-        self.assertEqual(
-            mock_send_slack.call_count,
-            len(AlertSeverity.values),
-        )
+        mock_send_email.assert_called_once()
+        mock_send_slack.assert_called_once()
 
     @override_settings(
         EMAIL_NOTIFICATIONS_ENABLED=True,
@@ -624,13 +517,8 @@ class NotificationServiceEdgeCaseTests(TestCase):
         mock_send_email,
         mock_send_slack,
     ):
-        alert = AlertFactory(
-            message="",
-        )
-
-        dispatch_alert_notifications(
-            alert,
-        )
+        alert = AlertFactory(message="")
+        dispatch_alert_notifications(alert)
 
         mock_send_email.assert_called_once()
         mock_send_slack.assert_called_once()
@@ -646,13 +534,8 @@ class NotificationServiceEdgeCaseTests(TestCase):
         mock_send_email,
         mock_send_slack,
     ):
-        alert = AlertFactory(
-            message="🚨 Database down — सर्वर",
-        )
-
-        dispatch_alert_notifications(
-            alert,
-        )
+        alert = AlertFactory(message="🚨 Database down — सर्वर")
+        dispatch_alert_notifications(alert)
 
         mock_send_email.assert_called_once()
         mock_send_slack.assert_called_once()
