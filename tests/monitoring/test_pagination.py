@@ -1,275 +1,157 @@
-from django.contrib.auth import get_user_model
-from django.test import TestCase
+import pytest
 
-from monitoring.models import (
-    Log,
-    LogStatus,
-    Service,
-)
+from monitoring.models import Log, LogStatus
 from monitoring.pagination import LogCursorPagination
 from monitoring.serializers.log_serializer import LogReadSerializer
 
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory
 
+from tests.monitoring.conftest import make_log
 
-User = get_user_model()
 
-
-class LogCursorPaginationTests(TestCase):
+class TestLogCursorPagination:
     """
-    Tests for LogCursorPagination.
+    Tests for LogCursorPagination configuration.
     """
-
-    def setUp(self):
-        self.user = User.objects.create_user(
-            email="owner@example.com",
-            password="Password@123",
-        )
-
-        self.service = Service.objects.create(
-            name="Monitoring API",
-            created_by=self.user,
-        )
-
-    def _create_log(
-        self,
-        status=LogStatus.SUCCESS,
-        status_code=200,
-        response_time_ms=100,
-        message="Test log",
-    ):
-        return Log.objects.create(
-            service=self.service,
-            status=status,
-            status_code=status_code,
-            response_time_ms=response_time_ms,
-            message=message,
-        )
-
-    # ---------------------------------------------------------
-    # Configuration
-    # ---------------------------------------------------------
 
     def test_default_page_size(self):
-        self.assertEqual(
-            LogCursorPagination.page_size,
-            20,
-        )
+        assert LogCursorPagination.page_size == 20
 
     def test_page_size_query_param(self):
-        self.assertEqual(
-            LogCursorPagination.page_size_query_param,
-            "page_size",
-        )
+        assert LogCursorPagination.page_size_query_param == "page_size"
 
     def test_max_page_size(self):
-        self.assertEqual(
-            LogCursorPagination.max_page_size,
-            100,
-        )
+        assert LogCursorPagination.max_page_size == 100
 
     def test_default_ordering(self):
-        self.assertEqual(
-            LogCursorPagination.ordering,
-            "-created_at",
-        )
+        assert LogCursorPagination.ordering == "-created_at"
 
 
-class LogCursorPaginationBehaviorTests(TestCase):
+@pytest.mark.django_db
+class TestLogCursorPaginationBehavior:
     """
     Behavioral tests for LogCursorPagination.
     """
 
-    def setUp(self):
-        self.factory = APIRequestFactory()
+    @pytest.fixture
+    def factory(self):
+        return APIRequestFactory()
 
-        self.user = User.objects.create_user(
-            email="owner@example.com",
-            password="Password@123",
-        )
-
-        self.service = Service.objects.create(
-            name="Monitoring API",
-            created_by=self.user,
-        )
-
-    def _create_logs(self, count):
-        logs = []
-
-        for index in range(count):
-            logs.append(
-                Log.objects.create(
-                    service=self.service,
-                    status=LogStatus.SUCCESS,
-                    status_code=200,
-                    response_time_ms=index,
-                    message=f"Log {index}",
-                )
+    @staticmethod
+    def _create_logs(count, service):
+        return [
+            make_log(
+                service,
+                status=LogStatus.SUCCESS,
+                status_code=200,
+                response_time_ms=i,
+                message=f"Log {i}",
             )
-
-        return logs
+            for i in range(count)
+        ]
 
     # ---------------------------------------------------------
     # Default page size
     # ---------------------------------------------------------
 
-    def test_default_page_contains_20_results(self):
-        self._create_logs(30)
+    def test_default_page_contains_20_results(self, factory, service):
+        self._create_logs(30, service)
 
-        request = Request(self.factory.get("/api/v1/monitoring/logs/"))
-
+        request = Request(factory.get("/api/v1/monitoring/logs/"))
         paginator = LogCursorPagination()
-
         queryset = Log.objects.all().order_by("-created_at")
 
-        page = paginator.paginate_queryset(
-            queryset,
-            request,
-        )
+        page = paginator.paginate_queryset(queryset, request)
 
-        self.assertEqual(
-            len(page),
-            20,
-        )
+        assert len(page) == 20
 
     # ---------------------------------------------------------
     # Less than page size
     # ---------------------------------------------------------
 
-    def test_returns_all_results_when_less_than_page_size(self):
-        self._create_logs(8)
+    def test_returns_all_results_when_less_than_page_size(self, factory, service):
+        self._create_logs(8, service)
 
-        request = Request(self.factory.get("/api/v1/monitoring/logs/"))
-
+        request = Request(factory.get("/api/v1/monitoring/logs/"))
         paginator = LogCursorPagination()
-
         queryset = Log.objects.all().order_by("-created_at")
 
-        page = paginator.paginate_queryset(
-            queryset,
-            request,
-        )
+        page = paginator.paginate_queryset(queryset, request)
 
-        self.assertEqual(
-            len(page),
-            8,
-        )
+        assert len(page) == 8
 
     # ---------------------------------------------------------
     # Exactly page size
     # ---------------------------------------------------------
 
-    def test_returns_exact_page_size(self):
-        self._create_logs(20)
+    def test_returns_exact_page_size(self, factory, service):
+        self._create_logs(20, service)
 
-        request = Request(self.factory.get("/api/v1/monitoring/logs/"))
-
+        request = Request(factory.get("/api/v1/monitoring/logs/"))
         paginator = LogCursorPagination()
-
         queryset = Log.objects.all().order_by("-created_at")
 
-        page = paginator.paginate_queryset(
-            queryset,
-            request,
-        )
+        page = paginator.paginate_queryset(queryset, request)
 
-        self.assertEqual(
-            len(page),
-            20,
-        )
+        assert len(page) == 20
 
-
-        # ---------------------------------------------------------
+    # ---------------------------------------------------------
     # page_size query parameter
     # ---------------------------------------------------------
 
-    def test_custom_page_size(self):
-        self._create_logs(40)
+    def test_custom_page_size(self, factory, service):
+        self._create_logs(40, service)
 
         request = Request(
-            self.factory.get(
+            factory.get(
                 "/api/v1/monitoring/logs/",
-                {
-                    "page_size": 10,
-                },
+                {"page_size": 10},
             )
         )
-
         paginator = LogCursorPagination()
-
         queryset = Log.objects.all().order_by("-created_at")
 
-        page = paginator.paginate_queryset(
-            queryset,
-            request,
-        )
+        page = paginator.paginate_queryset(queryset, request)
 
-        self.assertEqual(
-            len(page),
-            10,
-        )
+        assert len(page) == 10
 
     # ---------------------------------------------------------
     # max_page_size enforcement
     # ---------------------------------------------------------
 
-    def test_page_size_is_limited_to_max_page_size(self):
-        self._create_logs(150)
+    def test_page_size_is_limited_to_max_page_size(self, factory, service):
+        self._create_logs(150, service)
 
         request = Request(
-            self.factory.get(
+            factory.get(
                 "/api/v1/monitoring/logs/",
-                {
-                    "page_size": 999,
-                },
+                {"page_size": 999},
             )
         )
-
         paginator = LogCursorPagination()
-
         queryset = Log.objects.all().order_by("-created_at")
 
-        page = paginator.paginate_queryset(
-            queryset,
-            request,
-        )
+        page = paginator.paginate_queryset(queryset, request)
 
-        self.assertEqual(
-            len(page),
-            paginator.max_page_size,
-        )
+        assert len(page) == paginator.max_page_size
 
     # ---------------------------------------------------------
     # Ordering
     # ---------------------------------------------------------
 
-    def test_results_are_ordered_by_created_at_descending(self):
-        self._create_logs(5)
+    def test_results_are_ordered_by_created_at_descending(self, factory, service):
+        self._create_logs(5, service)
 
-        request = Request(self.factory.get("/api/v1/monitoring/logs/"))
-
+        request = Request(factory.get("/api/v1/monitoring/logs/"))
         paginator = LogCursorPagination()
-
         queryset = Log.objects.all()
 
-        page = paginator.paginate_queryset(
-            queryset,
-            request,
-        )
+        page = paginator.paginate_queryset(queryset, request)
 
-        created_times = [
-            log.created_at
-            for log in page
-        ]
+        created_times = [log.created_at for log in page]
 
-        self.assertEqual(
-            created_times,
-            sorted(
-                created_times,
-                reverse=True,
-            ),
-        )
+        assert created_times == sorted(created_times, reverse=True)
 
     # ---------------------------------------------------------
     # Ordering configuration
@@ -278,101 +160,57 @@ class LogCursorPaginationBehaviorTests(TestCase):
     def test_ordering_configuration(self):
         paginator = LogCursorPagination()
 
-        self.assertEqual(
-            paginator.ordering,
-            "-created_at",
-        )
+        assert paginator.ordering == "-created_at"
 
-
-        # ---------------------------------------------------------
+    # ---------------------------------------------------------
     # Empty queryset
     # ---------------------------------------------------------
 
-    def test_empty_queryset_returns_empty_page(self):
-        request = Request(self.factory.get("/api/v1/monitoring/logs/"))
-
+    def test_empty_queryset_returns_empty_page(self, factory):
+        request = Request(factory.get("/api/v1/monitoring/logs/"))
         paginator = LogCursorPagination()
-
         queryset = Log.objects.none()
 
-        page = paginator.paginate_queryset(
-            queryset,
-            request,
-        )
+        page = paginator.paginate_queryset(queryset, request)
 
-        self.assertEqual(
-            page,
-            [],
-        )
+        assert page == []
 
     # ---------------------------------------------------------
     # Paginated response
     # ---------------------------------------------------------
 
-    def test_get_paginated_response_contains_results(self):
-        self._create_logs(5)
+    def test_get_paginated_response_contains_results(self, factory, service):
+        self._create_logs(5, service)
 
-        request = Request(self.factory.get("/api/v1/monitoring/logs/"))
-
+        request = Request(factory.get("/api/v1/monitoring/logs/"))
         paginator = LogCursorPagination()
-
         queryset = Log.objects.all().order_by("-created_at")
 
-        page = paginator.paginate_queryset(
-            queryset,
-            request,
-        )
+        page = paginator.paginate_queryset(queryset, request)
 
-        serializer = LogReadSerializer(
-            page,
-            many=True,
-        )
+        serializer = LogReadSerializer(page, many=True)
+        response = paginator.get_paginated_response(serializer.data)
 
-        response = paginator.get_paginated_response(
-            serializer.data,
-        )
-
-        self.assertEqual(
-            response.status_code,
-            200,
-        )
-
-        self.assertIn(
-            "results",
-            response.data,
-        )
-
-        self.assertEqual(
-            len(response.data["results"]),
-            5,
-        )
+        assert response.status_code == 200
+        assert "results" in response.data
+        assert len(response.data["results"]) == 5
 
     # ---------------------------------------------------------
     # Invalid page_size falls back safely
     # ---------------------------------------------------------
 
-    def test_invalid_page_size_uses_default(self):
-        self._create_logs(30)
+    def test_invalid_page_size_uses_default(self, factory, service):
+        self._create_logs(30, service)
 
         request = Request(
-            self.factory.get(
+            factory.get(
                 "/api/v1/monitoring/logs/",
-                {
-                    "page_size": "invalid",
-                },
+                {"page_size": "invalid"},
             )
         )
-
         paginator = LogCursorPagination()
-
         queryset = Log.objects.all().order_by("-created_at")
 
-        page = paginator.paginate_queryset(
-            queryset,
-            request,
-        )
+        page = paginator.paginate_queryset(queryset, request)
 
-        self.assertEqual(
-            len(page),
-            paginator.page_size,
-        )
+        assert len(page) == paginator.page_size
