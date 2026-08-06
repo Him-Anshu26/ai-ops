@@ -11,6 +11,8 @@ from alerts.models import (
 from tests.factories.log_factory import LogFactory
 from tests.factories.service_factory import ServiceFactory
 
+import uuid
+
 
 class AlertFactory(DjangoModelFactory):
     class Meta:
@@ -22,9 +24,9 @@ class AlertFactory(DjangoModelFactory):
 
     alert_type = AlertType.ERROR
 
-    message = factory.Faker("sentence")
+    message = factory.Sequence(lambda n: f"Alert {n}")
 
-    alert_key = factory.Sequence(lambda n: f"error-service-{n}")
+    alert_key = factory.LazyFunction(lambda: f"error:{uuid.uuid4().hex}")
 
     severity = AlertSeverity.MEDIUM
 
