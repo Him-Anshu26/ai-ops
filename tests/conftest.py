@@ -17,6 +17,11 @@ def user(db):
 
 
 @pytest.fixture
+def another_user(db):
+    return UserFactory()
+
+
+@pytest.fixture
 def service(db):
     return ServiceFactory()
 
