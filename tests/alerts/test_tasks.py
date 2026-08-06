@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
-from django.test import TestCase
+import pytest
+from django.db import DatabaseError
 
 from alerts.tasks import (
     cleanup_alerts_task,
@@ -9,15 +10,13 @@ from alerts.tasks import (
 
 from tests.factories import AlertFactory
 
-from django.db import DatabaseError
-
 
 # ============================================================
 # dispatch_alert_notifications_task Tests
 # ============================================================
 
-
-class DispatchAlertNotificationsTaskTests(TestCase):
+@pytest.mark.django_db
+class TestDispatchAlertNotificationsTask:
     """
     Unit tests for dispatch_alert_notifications_task.
     """
@@ -30,16 +29,11 @@ class DispatchAlertNotificationsTaskTests(TestCase):
         mock_dispatch,
     ):
         alert = AlertFactory()
-
         mock_select_related.return_value.get.return_value = alert
 
-        dispatch_alert_notifications_task(
-            alert.id,
-        )
+        dispatch_alert_notifications_task(alert.id)
 
-        mock_select_related.return_value.get.assert_called_once_with(
-            pk=alert.id,
-        )
+        mock_select_related.return_value.get.assert_called_once_with(pk=alert.id)
 
     @patch("alerts.tasks.dispatch_alert_notifications")
     @patch("alerts.tasks.Alert.objects.select_related")
@@ -49,17 +43,11 @@ class DispatchAlertNotificationsTaskTests(TestCase):
         mock_dispatch,
     ):
         alert = AlertFactory()
-
         mock_select_related.return_value.get.return_value = alert
 
-        dispatch_alert_notifications_task(
-            alert.id,
-        )
+        dispatch_alert_notifications_task(alert.id)
 
-        mock_select_related.assert_called_once_with(
-            "service",
-            "log",
-        )
+        mock_select_related.assert_called_once_with("service", "log")
 
     @patch("alerts.tasks.dispatch_alert_notifications")
     @patch("alerts.tasks.Alert.objects.select_related")
@@ -69,16 +57,11 @@ class DispatchAlertNotificationsTaskTests(TestCase):
         mock_dispatch,
     ):
         alert = AlertFactory()
-
         mock_select_related.return_value.get.return_value = alert
 
-        dispatch_alert_notifications_task(
-            alert.id,
-        )
+        dispatch_alert_notifications_task(alert.id)
 
-        mock_dispatch.assert_called_once_with(
-            alert,
-        )
+        mock_dispatch.assert_called_once_with(alert)
 
     @patch("alerts.tasks.dispatch_alert_notifications")
     @patch("alerts.tasks.Alert.objects.select_related")
@@ -88,21 +71,12 @@ class DispatchAlertNotificationsTaskTests(TestCase):
         mock_dispatch,
     ):
         alert = AlertFactory()
-
         mock_select_related.return_value.get.return_value = alert
 
-        dispatch_alert_notifications_task(
-            alert.id,
-        )
+        dispatch_alert_notifications_task(alert.id)
 
-        dispatched_alert = (
-            mock_dispatch.call_args.args[0]
-        )
-
-        self.assertIs(
-            dispatched_alert,
-            alert,
-        )
+        dispatched_alert = mock_dispatch.call_args.args[0]
+        assert dispatched_alert is alert
 
     @patch("alerts.tasks.logger")
     @patch("alerts.tasks.dispatch_alert_notifications")
@@ -114,12 +88,9 @@ class DispatchAlertNotificationsTaskTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         mock_select_related.return_value.get.return_value = alert
 
-        dispatch_alert_notifications_task(
-            alert.id,
-        )
+        dispatch_alert_notifications_task(alert.id)
 
         mock_logger.info.assert_any_call(
             "Starting notification task for alert %s",
@@ -136,12 +107,9 @@ class DispatchAlertNotificationsTaskTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         mock_select_related.return_value.get.return_value = alert
 
-        dispatch_alert_notifications_task(
-            alert.id,
-        )
+        dispatch_alert_notifications_task(alert.id)
 
         mock_logger.info.assert_any_call(
             "Finished notification task for alert %s",
@@ -157,13 +125,9 @@ class DispatchAlertNotificationsTaskTests(TestCase):
         mock_dispatch,
         mock_logger,
     ):
-        mock_select_related.return_value.get.side_effect = (
-            AlertFactory._meta.model.DoesNotExist
-        )
+        mock_select_related.return_value.get.side_effect = AlertFactory._meta.model.DoesNotExist
 
-        dispatch_alert_notifications_task(
-            999,
-        )
+        dispatch_alert_notifications_task(999)
 
         mock_logger.warning.assert_called_once_with(
             "Alert %s no longer exists. Skipping notification.",
@@ -177,17 +141,11 @@ class DispatchAlertNotificationsTaskTests(TestCase):
         mock_select_related,
         mock_dispatch,
     ):
-        mock_select_related.return_value.get.side_effect = (
-            AlertFactory._meta.model.DoesNotExist
-        )
+        mock_select_related.return_value.get.side_effect = AlertFactory._meta.model.DoesNotExist
 
-        result = dispatch_alert_notifications_task(
-            999,
-        )
+        result = dispatch_alert_notifications_task(999)
 
-        self.assertIsNone(
-            result,
-        )
+        assert result is None
 
     @patch("alerts.tasks.dispatch_alert_notifications")
     @patch("alerts.tasks.Alert.objects.select_related")
@@ -196,16 +154,11 @@ class DispatchAlertNotificationsTaskTests(TestCase):
         mock_select_related,
         mock_dispatch,
     ):
-        mock_select_related.return_value.get.side_effect = (
-            AlertFactory._meta.model.DoesNotExist
-        )
+        mock_select_related.return_value.get.side_effect = AlertFactory._meta.model.DoesNotExist
 
-        dispatch_alert_notifications_task(
-            999,
-        )
+        dispatch_alert_notifications_task(999)
 
         mock_dispatch.assert_not_called()
-
 
     # ============================================================
     # Retry Behaviour
@@ -218,12 +171,8 @@ class DispatchAlertNotificationsTaskTests(TestCase):
     ):
         mock_select_related.side_effect = DatabaseError()
 
-        with self.assertRaises(
-            DatabaseError,
-        ):
-            dispatch_alert_notifications_task(
-                1,
-            )
+        with pytest.raises(DatabaseError):
+            dispatch_alert_notifications_task(1)
 
     @patch("alerts.tasks.Alert.objects.select_related")
     def test_connection_error_propagates_for_retry(
@@ -232,12 +181,8 @@ class DispatchAlertNotificationsTaskTests(TestCase):
     ):
         mock_select_related.side_effect = ConnectionError()
 
-        with self.assertRaises(
-            ConnectionError,
-        ):
-            dispatch_alert_notifications_task(
-                1,
-            )
+        with pytest.raises(ConnectionError):
+            dispatch_alert_notifications_task(1)
 
 
 # ============================================================
@@ -245,7 +190,7 @@ class DispatchAlertNotificationsTaskTests(TestCase):
 # ============================================================
 
 
-class CleanupAlertsTaskTests(TestCase):
+class TestCleanupAlertsTask:
     """
     Unit tests for cleanup_alerts_task.
     """
@@ -255,9 +200,7 @@ class CleanupAlertsTaskTests(TestCase):
         self,
         mock_cleanup,
     ):
-        mock_cleanup.return_value = {
-            "resolved_alerts": 5,
-        }
+        mock_cleanup.return_value = {"resolved_alerts": 5}
 
         cleanup_alerts_task()
 
@@ -268,18 +211,11 @@ class CleanupAlertsTaskTests(TestCase):
         self,
         mock_cleanup,
     ):
-        mock_cleanup.return_value = {
-            "resolved_alerts": 8,
-        }
+        mock_cleanup.return_value = {"resolved_alerts": 8}
 
         result = cleanup_alerts_task()
 
-        self.assertEqual(
-            result,
-            {
-                "resolved_alerts": 8,
-            },
-        )
+        assert result == {"resolved_alerts": 8}
 
     @patch("alerts.tasks.cleanup_alerts")
     def test_returns_empty_result(
@@ -290,27 +226,18 @@ class CleanupAlertsTaskTests(TestCase):
 
         result = cleanup_alerts_task()
 
-        self.assertEqual(
-            result,
-            {},
-        )
+        assert result == {}
 
     @patch("alerts.tasks.cleanup_alerts")
     def test_cleanup_called_once(
         self,
         mock_cleanup,
     ):
-        mock_cleanup.return_value = {
-            "resolved_alerts": 1,
-        }
+        mock_cleanup.return_value = {"resolved_alerts": 1}
 
         cleanup_alerts_task()
 
-        self.assertEqual(
-            mock_cleanup.call_count,
-            1,
-        )
-
+        assert mock_cleanup.call_count == 1
 
 
 # ============================================================
@@ -318,64 +245,29 @@ class CleanupAlertsTaskTests(TestCase):
 # ============================================================
 
 
-class TaskConfigurationTests(TestCase):
+class TestTaskConfiguration:
     """
     Verify Celery task configuration.
     """
 
-    def test_dispatch_task_name(
-        self,
-    ):
-        self.assertEqual(
-            dispatch_alert_notifications_task.name,
-            "alerts.dispatch_alert_notifications",
+    def test_dispatch_task_name(self):
+        assert dispatch_alert_notifications_task.name == "alerts.dispatch_alert_notifications"
+
+    def test_cleanup_task_name(self):
+        assert cleanup_alerts_task.name == "alerts.cleanup"
+
+    def test_dispatch_task_is_bound(self):
+        assert dispatch_alert_notifications_task.bind
+
+    def test_dispatch_task_autoretry_for(self):
+        assert dispatch_alert_notifications_task.autoretry_for == (
+            DatabaseError,
+            ConnectionError,
         )
 
-    def test_cleanup_task_name(
-        self,
-    ):
-        self.assertEqual(
-            cleanup_alerts_task.name,
-            "alerts.cleanup",
-        )
+    def test_dispatch_task_retry_backoff_enabled(self):
+        assert dispatch_alert_notifications_task.retry_backoff
 
-    def test_dispatch_task_is_bound(
-        self,
-    ):
-        self.assertTrue(
-            dispatch_alert_notifications_task.bind,
-        )
-
-    def test_dispatch_task_autoretry_for(
-        self,
-    ):
-        self.assertEqual(
-            dispatch_alert_notifications_task.autoretry_for,
-            (
-                DatabaseError,
-                ConnectionError,
-            ),
-        )
-
-    def test_dispatch_task_retry_backoff_enabled(
-        self,
-    ):
-        self.assertTrue(
-            dispatch_alert_notifications_task.retry_backoff,
-        )
-
-    def test_dispatch_task_max_retries(
-        self,
-    ):
-
-        self.assertIn(
-            "max_retries",
-            dispatch_alert_notifications_task.retry_kwargs,
-        )
-        
-        self.assertEqual(
-            dispatch_alert_notifications_task.retry_kwargs[
-                "max_retries"
-            ],
-            5,
-        )
+    def test_dispatch_task_max_retries(self):
+        assert "max_retries" in dispatch_alert_notifications_task.retry_kwargs
+        assert dispatch_alert_notifications_task.retry_kwargs["max_retries"] == 5
