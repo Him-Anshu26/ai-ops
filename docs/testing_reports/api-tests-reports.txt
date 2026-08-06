@@ -1,0 +1,89 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- H:\Projects\ai_ops\venv\Scripts\python.exe
+cachedir: .pytest_cache
+django: version: 5.2.1, settings: ai_ops.settings.dev (from ini)
+rootdir: H:\Projects\ai_ops
+configfile: pytest.ini
+plugins: Faker-40.36.0, cov-7.1.0, django-4.12.0
+collecting ... collected 61 items
+
+tests/apis/test_alerts.py::TestListAlertsAPI::test_list_alerts_default_filter PASSED [  1%]
+tests/apis/test_alerts.py::TestListAlertsAPI::test_list_alerts_explicit_status_filter PASSED [  3%]
+tests/apis/test_alerts.py::TestListAlertsAPI::test_list_alerts_ordering PASSED [  4%]
+tests/apis/test_alerts.py::TestListAlertsAPI::test_list_alerts_unauthenticated PASSED [  6%]
+tests/apis/test_alerts.py::TestRetrieveAlertAPI::test_retrieve_alert_success PASSED [  8%]
+tests/apis/test_alerts.py::TestRetrieveAlertAPI::test_retrieve_alert_not_found PASSED [  9%]
+tests/apis/test_alerts.py::TestRetrieveAlertAPI::test_retrieve_alert_unauthenticated PASSED [ 11%]
+tests/apis/test_alerts.py::TestCreateAlertAPI::test_create_alert_success PASSED [ 13%]
+tests/apis/test_alerts.py::TestCreateAlertAPI::test_create_alert_validation[payload_override0-service] PASSED [ 14%]
+tests/apis/test_alerts.py::TestCreateAlertAPI::test_create_alert_validation[payload_override1-severity] PASSED [ 16%]
+tests/apis/test_alerts.py::TestCreateAlertAPI::test_create_alert_validation[payload_override2-status] PASSED [ 18%]
+tests/apis/test_alerts.py::TestCreateAlertAPI::test_create_alert_validation[payload_override3-alert_type] PASSED [ 19%]
+tests/apis/test_alerts.py::TestCreateAlertAPI::test_create_alert_validation[payload_override4-alert_key] PASSED [ 21%]
+tests/apis/test_alerts.py::TestCreateAlertAPI::test_create_alert_validation[payload_override5-alert_key] PASSED [ 22%]
+tests/apis/test_alerts.py::TestCreateAlertAPI::test_create_alert_duplicate_constraint PASSED [ 24%]
+tests/apis/test_alerts.py::TestCreateAlertAPI::test_create_alert_unauthenticated PASSED [ 26%]
+tests/apis/test_alerts.py::TestResolveAlertAPI::test_resolve_alert_success PASSED [ 27%]
+tests/apis/test_alerts.py::TestResolveAlertAPI::test_resolve_alert_missing_note_fails PASSED [ 29%]
+tests/apis/test_alerts.py::TestResolveAlertAPI::test_resolve_alert_unauthenticated PASSED [ 31%]
+tests/apis/test_alerts.py::TestBlockedMethodsAPI::test_blocked_methods_on_detail[put] PASSED [ 32%]
+tests/apis/test_alerts.py::TestBlockedMethodsAPI::test_blocked_methods_on_detail[patch] PASSED [ 34%]
+tests/apis/test_alerts.py::TestBlockedMethodsAPI::test_blocked_methods_on_detail[delete] PASSED [ 36%]
+tests/apis/test_auth.py::TestRegisterAPI::test_register_success PASSED   [ 37%]
+tests/apis/test_auth.py::TestRegisterAPI::test_register_invalid_payload[invalid_payload0] PASSED [ 39%]
+tests/apis/test_auth.py::TestRegisterAPI::test_register_invalid_payload[invalid_payload1] PASSED [ 40%]
+tests/apis/test_auth.py::TestRegisterAPI::test_register_invalid_payload[invalid_payload2] PASSED [ 42%]
+tests/apis/test_auth.py::TestRegisterAPI::test_register_duplicate_email PASSED [ 44%]
+tests/apis/test_auth.py::TestLoginAPI::test_login_success PASSED         [ 45%]
+tests/apis/test_auth.py::TestLoginAPI::test_login_invalid_credentials[payload0] PASSED [ 47%]
+tests/apis/test_auth.py::TestLoginAPI::test_login_invalid_credentials[payload1] PASSED [ 49%]
+tests/apis/test_auth.py::TestLoginAPI::test_login_missing_fields PASSED  [ 50%]
+tests/apis/test_auth.py::TestRefreshTokenAPI::test_refresh_invalid_token PASSED [ 52%]
+tests/apis/test_auth.py::TestRefreshTokenAPI::test_refresh_missing_token PASSED [ 54%]
+tests/apis/test_auth.py::TestLogoutAPI::test_logout_without_authentication PASSED [ 55%]
+tests/apis/test_auth.py::TestLogoutAPI::test_logout_authenticated_user PASSED [ 57%]
+tests/apis/test_health.py::TestHealthAPI::test_health_check_success PASSED [ 59%]
+tests/apis/test_health.py::TestHealthAPI::test_health_check_database_failure PASSED [ 60%]
+tests/apis/test_health.py::TestHealthAPI::test_health_check_redis_failure PASSED [ 62%]
+tests/apis/test_health.py::TestHealthAPI::test_health_check_celery_failure PASSED [ 63%]
+tests/apis/test_health.py::TestHealthAPI::test_health_check_unexpected_exception PASSED [ 65%]
+tests/apis/test_health.py::TestHealthAPI::test_health_check_graceful_fallback PASSED [ 67%]
+tests/apis/test_logs.py::TestListLogsAPI::test_list_logs_success PASSED  [ 68%]
+tests/apis/test_logs.py::TestListLogsAPI::test_list_logs_unauthenticated PASSED [ 70%]
+tests/apis/test_logs.py::TestListLogsAPI::test_list_logs_filtering PASSED [ 72%]
+tests/apis/test_logs.py::TestListLogsAPI::test_list_logs_ordering PASSED [ 73%]
+tests/apis/test_logs.py::TestRetrieveLogAPI::test_retrieve_log_success PASSED [ 75%]
+tests/apis/test_logs.py::TestRetrieveLogAPI::test_retrieve_log_not_found PASSED [ 77%]
+tests/apis/test_logs.py::TestRetrieveLogAPI::test_retrieve_log_unauthenticated PASSED [ 78%]
+tests/apis/test_logs.py::TestCreateLogAPI::test_create_log_success PASSED [ 80%]
+tests/apis/test_logs.py::TestCreateLogAPI::test_create_log_default_message PASSED [ 81%]
+tests/apis/test_logs.py::TestCreateLogAPI::test_create_log_unauthenticated PASSED [ 83%]
+tests/apis/test_logs.py::TestCreateLogAPI::test_create_log_validation[payload_override0-service] PASSED [ 85%]
+tests/apis/test_logs.py::TestCreateLogAPI::test_create_log_validation[payload_override1-status] PASSED [ 86%]
+tests/apis/test_logs.py::TestCreateLogAPI::test_create_log_validation[payload_override2-status] PASSED [ 88%]
+tests/apis/test_logs.py::TestCreateLogAPI::test_create_log_validation[payload_override3-response_time_ms] PASSED [ 90%]
+tests/apis/test_logs.py::TestCreateLogAPI::test_create_log_validation[payload_override4-status_code] PASSED [ 91%]
+tests/apis/test_logs.py::TestCreateLogAPI::test_create_log_validation[payload_override5-status_code] PASSED [ 93%]
+tests/apis/test_logs.py::TestCreateLogAPI::test_create_log_validation[payload_override6-non_field_errors] PASSED [ 95%]
+tests/apis/test_logs.py::TestBlockedMethodsAPI::test_blocked_methods_on_detail[put] PASSED [ 96%]
+tests/apis/test_logs.py::TestBlockedMethodsAPI::test_blocked_methods_on_detail[patch] PASSED [ 98%]
+tests/apis/test_logs.py::TestBlockedMethodsAPI::test_blocked_methods_on_detail[delete] PASSED [100%]
+
+============================== warnings summary ===============================
+tests/apis/test_alerts.py: 54 warnings
+tests/apis/test_auth.py: 5 warnings
+tests/apis/test_logs.py: 35 warnings
+  H:\Projects\ai_ops\venv\Lib\site-packages\factory\django.py:182: DeprecationWarning: UserFactory._after_postgeneration will stop saving the instance after postgeneration hooks in the next major release.
+  If the save call is extraneous, set skip_postgeneration_save=True in the UserFactory.Meta.
+  To keep saving the instance, move the save call to your postgeneration hooks or override _after_postgeneration.
+    warnings.warn(
+
+tests/apis/test_alerts.py: 22 warnings
+tests/apis/test_auth.py: 13 warnings
+tests/apis/test_health.py: 5 warnings
+tests/apis/test_logs.py: 20 warnings
+  H:\Projects\ai_ops\venv\Lib\site-packages\django\core\handlers\base.py:61: UserWarning: No directory at: H:\Projects\ai_ops\staticfiles\
+    mw_instance = middleware(adapted_handler)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================= 61 passed, 154 warnings in 70.52s (0:01:10) =================
