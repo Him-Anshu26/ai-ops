@@ -561,7 +561,7 @@ For self-hosted deployments, use the provided Docker Compose configurations:
 | Docker | Production-grade container image (Python 3.13-slim) |
 | Docker Compose | Multi-service orchestration (dev & prod) |
 | Railway | Cloud deployment platform |
-| WhiteNoise | 6.12.0 | Production static file serving |
+| WhiteNoise | Production static file serving (v6.12.0) |
 
 ### Documentation
 
@@ -903,10 +903,9 @@ All secrets and configuration are managed via `django-environ`. Variables are lo
 
 ## 📮 Postman
 
-You can quickly test the API by importing the provided Postman collection and environment.
+You can quickly test the API by importing the provided Postman collection.
 
-- **Collection**: `docs/postman/AI_Ops_API.postman_collection.json` (Contains every endpoint)
-- **Environment**: `docs/postman/AI_Ops_Environment.postman_environment.json` (Contains variables)
+- **Collection**: `docs/postman/AI_Ops.postman_collection.json` (Contains every endpoint)
 
 Users only need to change the Base URL and update Tokens in the environment variables.
 
@@ -933,6 +932,14 @@ Users only need to change the Base URL and update Tokens in the environment vari
 ### Docker Infrastructure
 ![Docker Containers](docs/screenshots/docker-containers.png)
 *Containerized services running via Docker Compose.*
+
+### All Tests Passed
+![All Tests Passed](docs/testing/all_tests_passed.png)
+*Full automated test suite passing — unit, API, and integration tests.*
+
+### Code Coverage Report
+![Coverage Report](docs/testing/coverage_report_06.png)
+*Code coverage summary across all application modules.*
 
 ---
 
