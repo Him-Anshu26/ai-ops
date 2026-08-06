@@ -1,24 +1,22 @@
 from datetime import timedelta
 from unittest.mock import patch
 
-from django.contrib.auth import get_user_model
-from django.test import TestCase
+import pytest
+
 from django.utils import timezone
 
-from monitoring.models import (
-    Log,
-    Service,
-)
+from monitoring.models import Log
 from monitoring.services.cleanup_service import (
     CleanupOldLogsService,
     cleanup_old_logs,
     LOG_RETENTION_DAYS,
 )
 
-User = get_user_model()
+from tests.monitoring.conftest import make_log
 
 
-class CleanupOldLogsServiceTests(TestCase):
+@pytest.mark.django_db
+class TestCleanupOldLogsService:
     """
     Unit tests for CleanupOldLogsService.
 
@@ -31,97 +29,52 @@ class CleanupOldLogsServiceTests(TestCase):
     - Callable instance
     """
 
-    def setUp(self):
-        self.user = User.objects.create_user(
-            email="owner@example.com",
-            password="Password@123",
-        )
-
-        self.service = Service.objects.create(
-            name="Monitoring API",
-            created_by=self.user,
-        )
-
-    # ---------------------------------------------------------
-    # Helpers
-    # ---------------------------------------------------------
-
-    def _create_log(self, created_at):
-        log = Log.objects.create(
-            service=self.service,
-            message="Health log",
-        )
-
-        Log.objects.filter(pk=log.pk).update(
-            created_at=created_at,
-        )
-
-        log.refresh_from_db()
-
-        return log
-
     # ---------------------------------------------------------
     # Cleanup
     # ---------------------------------------------------------
 
-    def test_deletes_logs_older_than_retention(self):
+    def test_deletes_logs_older_than_retention(self, service):
         cutoff = timezone.now() - timedelta(days=LOG_RETENTION_DAYS)
 
-        self._create_log(
-            cutoff - timedelta(days=5),
-        )
-
-        self._create_log(
-            cutoff - timedelta(days=10),
-        )
-
-        self._create_log(
-            cutoff + timedelta(days=1),
-        )
-
-        self._create_log(
-            timezone.now(),
-        )
+        make_log(service, created_at=cutoff - timedelta(days=5))
+        make_log(service, created_at=cutoff - timedelta(days=10))
+        make_log(service, created_at=cutoff + timedelta(days=1))
+        make_log(service, created_at=timezone.now())
 
         deleted = CleanupOldLogsService()()
 
-        self.assertEqual(deleted, 2)
-        self.assertEqual(Log.objects.count(), 2)
+        assert deleted == 2
+        assert Log.objects.count() == 2
 
-    def test_returns_zero_when_nothing_to_delete(self):
-        self._create_log(timezone.now())
-        self._create_log(
-            timezone.now() - timedelta(days=5),
-        )
+    def test_returns_zero_when_nothing_to_delete(self, service):
+        make_log(service, created_at=timezone.now())
+        make_log(service, created_at=timezone.now() - timedelta(days=5))
 
         deleted = CleanupOldLogsService()()
 
-        self.assertEqual(deleted, 0)
-        self.assertEqual(Log.objects.count(), 2)
+        assert deleted == 0
+        assert Log.objects.count() == 2
 
-    def test_deletes_all_old_logs(self):
+    def test_deletes_all_old_logs(self, service):
         cutoff = timezone.now() - timedelta(days=LOG_RETENTION_DAYS)
 
         for _ in range(5):
-            self._create_log(
-                cutoff - timedelta(days=30),
-            )
+            make_log(service, created_at=cutoff - timedelta(days=30))
 
         deleted = CleanupOldLogsService()()
 
-        self.assertEqual(deleted, 5)
-        self.assertEqual(Log.objects.count(), 0)
+        assert deleted == 5
+        assert Log.objects.count() == 0
 
     # ---------------------------------------------------------
     # Boundary
     # ---------------------------------------------------------
 
-    def test_log_exactly_on_retention_boundary_is_not_deleted(self):
+    def test_log_exactly_on_retention_boundary_is_not_deleted(self, service):
         fixed_now = timezone.now()
-
         cutoff = fixed_now - timedelta(days=LOG_RETENTION_DAYS)
 
-        log = self._create_log(cutoff)
+        log = make_log(service, created_at=cutoff)
 
         with patch(
             "monitoring.services.cleanup_service.timezone.now",
@@ -129,41 +82,28 @@ class CleanupOldLogsServiceTests(TestCase):
         ):
             deleted = CleanupOldLogsService()()
 
-        self.assertEqual(deleted, 0)
+        assert deleted == 0
+        assert Log.objects.filter(pk=log.pk).exists()
 
-        self.assertTrue(
-            Log.objects.filter(pk=log.pk).exists()
-        )
-
-    def test_recent_logs_are_preserved(self):
-        self._create_log(
-            timezone.now(),
-        )
-
-        self._create_log(
-            timezone.now() - timedelta(days=1),
-        )
-
-        self._create_log(
-            timezone.now() - timedelta(days=7),
-        )
+    def test_recent_logs_are_preserved(self, service):
+        make_log(service, created_at=timezone.now())
+        make_log(service, created_at=timezone.now() - timedelta(days=1))
+        make_log(service, created_at=timezone.now() - timedelta(days=7))
 
         deleted = CleanupOldLogsService()()
 
-        self.assertEqual(deleted, 0)
-        self.assertEqual(Log.objects.count(), 3)
+        assert deleted == 0
+        assert Log.objects.count() == 3
 
     # ---------------------------------------------------------
     # Logger
     # ---------------------------------------------------------
 
     @patch("monitoring.services.cleanup_service.logger.info")
-    def test_logger_called(self, mock_logger):
+    def test_logger_called(self, mock_logger, service):
         cutoff = timezone.now() - timedelta(days=LOG_RETENTION_DAYS)
 
-        self._create_log(
-            cutoff - timedelta(days=1),
-        )
+        make_log(service, created_at=cutoff - timedelta(days=1))
 
         deleted = CleanupOldLogsService()()
 
@@ -176,16 +116,14 @@ class CleanupOldLogsServiceTests(TestCase):
     # Callable instance
     # ---------------------------------------------------------
 
-    def test_callable_instance(self):
+    def test_callable_instance(self, service):
         cutoff = timezone.now() - timedelta(days=LOG_RETENTION_DAYS)
 
-        self._create_log(
-            cutoff - timedelta(days=2),
-        )
+        make_log(service, created_at=cutoff - timedelta(days=2))
 
         deleted = cleanup_old_logs()
 
-        self.assertEqual(deleted, 1)
+        assert deleted == 1
 
     # ---------------------------------------------------------
     # Return Type
@@ -194,7 +132,4 @@ class CleanupOldLogsServiceTests(TestCase):
     def test_returns_integer(self):
         deleted = cleanup_old_logs()
 
-        self.assertIsInstance(
-            deleted,
-            int,
-        )
+        assert isinstance(deleted, int)
