@@ -1,9 +1,9 @@
 from datetime import timedelta
 from unittest.mock import MagicMock, patch
 
-from django.contrib.auth import get_user_model
+import pytest
+
 from django.db import IntegrityError
-from django.test import TestCase
 from django.utils import timezone
 
 from alerts.models import (
@@ -13,11 +13,7 @@ from alerts.models import (
     AlertType,
 )
 
-from monitoring.models import (
-    Log,
-    LogStatus,
-    Service,
-)
+from monitoring.models import LogStatus
 
 from monitoring.services.alert_service import (
     ALERT_COOLDOWN_SECONDS,
@@ -28,178 +24,90 @@ from monitoring.services.alert_service import (
     _process_rule,
 )
 
-User = get_user_model()
+from tests.monitoring.conftest import make_log
 
 
-class BuildAlertKeyTests(TestCase):
+@pytest.mark.django_db
+class TestBuildAlertKey:
     """
     Tests for _build_alert_key()
     """
-
-    def setUp(self):
-        self.user = User.objects.create_user(
-            email="owner@example.com",
-            password="Password@123",
-        )
-
-        self.service = Service.objects.create(
-            name="Monitoring API",
-            created_by=self.user,
-        )
-
-    def _create_log(
-        self,
-        status=LogStatus.SUCCESS,
-        status_code=200,
-        response_time_ms=100,
-    ):
-        return Log.objects.create(
-            service=self.service,
-            status=status,
-            status_code=status_code,
-            response_time_ms=response_time_ms,
-            message="Test log",
-        )
 
     # ---------------------------------------------------------
     # ERROR KEYS
     # ---------------------------------------------------------
 
-    def test_error_key_contains_service_and_status_code(self):
-        log = self._create_log(
-            status=LogStatus.ERROR,
-            status_code=500,
-        )
+    def test_error_key_contains_service_and_status_code(self, service):
+        log = make_log(service, status=LogStatus.ERROR, status_code=500)
 
-        key = _build_alert_key(
-            AlertType.ERROR,
-            log,
-        )
+        key = _build_alert_key(AlertType.ERROR, log)
 
-        self.assertEqual(
-            key,
-            f"error:{self.service.id}:500",
-        )
+        assert key == f"error:{service.id}:500"
 
-    def test_error_key_unknown_status_code(self):
-        log = self._create_log(
-            status=LogStatus.ERROR,
-            status_code=None,
-        )
+    def test_error_key_unknown_status_code(self, service):
+        log = make_log(service, status=LogStatus.ERROR, status_code=None)
 
-        key = _build_alert_key(
-            AlertType.ERROR,
-            log,
-        )
+        key = _build_alert_key(AlertType.ERROR, log)
 
-        self.assertEqual(
-            key,
-            f"error:{self.service.id}:unknown",
-        )
+        assert key == f"error:{service.id}:unknown"
 
     # ---------------------------------------------------------
     # LATENCY KEYS
     # ---------------------------------------------------------
 
-    def test_latency_medium_bucket(self):
-        log = self._create_log(
-            response_time_ms=1500,
-        )
+    def test_latency_medium_bucket(self, service):
+        log = make_log(service, response_time_ms=1500)
 
-        key = _build_alert_key(
-            AlertType.HIGH_LATENCY,
-            log,
-        )
+        key = _build_alert_key(AlertType.HIGH_LATENCY, log)
 
-        self.assertEqual(
-            key,
-            f"latency:{self.service.id}:medium",
-        )
+        assert key == f"latency:{service.id}:medium"
 
-    def test_latency_high_bucket(self):
-        log = self._create_log(
-            response_time_ms=2500,
-        )
+    def test_latency_high_bucket(self, service):
+        log = make_log(service, response_time_ms=2500)
 
-        key = _build_alert_key(
-            AlertType.HIGH_LATENCY,
-            log,
-        )
+        key = _build_alert_key(AlertType.HIGH_LATENCY, log)
 
-        self.assertEqual(
-            key,
-            f"latency:{self.service.id}:high",
-        )
+        assert key == f"latency:{service.id}:high"
 
-    def test_latency_very_high_bucket(self):
-        log = self._create_log(
-            response_time_ms=6000,
-        )
+    def test_latency_very_high_bucket(self, service):
+        log = make_log(service, response_time_ms=6000)
 
-        key = _build_alert_key(
-            AlertType.HIGH_LATENCY,
-            log,
-        )
+        key = _build_alert_key(AlertType.HIGH_LATENCY, log)
 
-        self.assertEqual(
-            key,
-            f"latency:{self.service.id}:very_high",
-        )
+        assert key == f"latency:{service.id}:very_high"
 
     # ---------------------------------------------------------
     # DOWNTIME
     # ---------------------------------------------------------
 
-    def test_downtime_key(self):
-        log = self._create_log()
+    def test_downtime_key(self, service):
+        log = make_log(service)
 
-        key = _build_alert_key(
-            AlertType.DOWNTIME,
-            log,
-        )
+        key = _build_alert_key(AlertType.DOWNTIME, log)
 
-        self.assertEqual(
-            key,
-            f"downtime:{self.service.id}",
-        )
+        assert key == f"downtime:{service.id}"
 
     # ---------------------------------------------------------
     # DEFAULT
     # ---------------------------------------------------------
 
-    def test_default_key(self):
-        log = self._create_log()
+    def test_default_key(self, service):
+        log = make_log(service)
 
-        key = _build_alert_key(
-            "custom",
-            log,
-        )
+        key = _build_alert_key("custom", log)
 
-        self.assertEqual(
-            key,
-            f"custom:{self.service.id}",
-        )
+        assert key == f"custom:{service.id}"
 
 
-class DetermineSeverityTests(TestCase):
+@pytest.mark.django_db
+class TestDetermineSeverity:
     """
     Tests for _determine_error_severity()
     """
 
-    def setUp(self):
-        self.user = User.objects.create_user(
-            email="owner@example.com",
-            password="Password@123",
-        )
-
-        self.service = Service.objects.create(
-            name="Backend",
-            created_by=self.user,
-        )
-
-    def _log(self, code):
-        return Log.objects.create(
-            service=self.service,
+    def _log(self, service, code):
+        return make_log(
+            service,
             status=LogStatus.ERROR,
             status_code=code,
             message="Failure",
@@ -209,190 +117,106 @@ class DetermineSeverityTests(TestCase):
     # CRITICAL
     # ---------------------------------------------------------
 
-    def test_503_is_critical(self):
-        severity = _determine_error_severity(
-            self._log(503)
-        )
-
-        self.assertEqual(
-            severity,
-            AlertSeverity.CRITICAL,
-        )
+    def test_503_is_critical(self, service):
+        severity = _determine_error_severity(self._log(service, 503))
+        assert severity == AlertSeverity.CRITICAL
 
     # ---------------------------------------------------------
     # HIGH
     # ---------------------------------------------------------
 
-    def test_500_is_high(self):
-        severity = _determine_error_severity(
-            self._log(500)
-        )
+    def test_500_is_high(self, service):
+        severity = _determine_error_severity(self._log(service, 500))
+        assert severity == AlertSeverity.HIGH
 
-        self.assertEqual(
-            severity,
-            AlertSeverity.HIGH,
-        )
+    def test_502_is_high(self, service):
+        severity = _determine_error_severity(self._log(service, 502))
+        assert severity == AlertSeverity.HIGH
 
-    def test_502_is_high(self):
-        severity = _determine_error_severity(
-            self._log(502)
-        )
-
-        self.assertEqual(
-            severity,
-            AlertSeverity.HIGH,
-        )
-
-    def test_599_is_high(self):
-        severity = _determine_error_severity(
-            self._log(599)
-        )
-
-        self.assertEqual(
-            severity,
-            AlertSeverity.HIGH,
-        )
+    def test_599_is_high(self, service):
+        severity = _determine_error_severity(self._log(service, 599))
+        assert severity == AlertSeverity.HIGH
 
     # ---------------------------------------------------------
     # MEDIUM
     # ---------------------------------------------------------
 
-    def test_404_is_medium(self):
-        severity = _determine_error_severity(
-            self._log(404)
-        )
+    def test_404_is_medium(self, service):
+        severity = _determine_error_severity(self._log(service, 404))
+        assert severity == AlertSeverity.MEDIUM
 
-        self.assertEqual(
-            severity,
-            AlertSeverity.MEDIUM,
-        )
+    def test_200_is_medium(self, service):
+        severity = _determine_error_severity(self._log(service, 200))
+        assert severity == AlertSeverity.MEDIUM
 
-    def test_200_is_medium(self):
-        severity = _determine_error_severity(
-            self._log(200)
-        )
-
-        self.assertEqual(
-            severity,
-            AlertSeverity.MEDIUM,
-        )
-
-    def test_none_status_code_is_medium(self):
-        severity = _determine_error_severity(
-            self._log(None)
-        )
-
-        self.assertEqual(
-            severity,
-            AlertSeverity.MEDIUM,
-        )
+    def test_none_status_code_is_medium(self, service):
+        severity = _determine_error_severity(self._log(service, None))
+        assert severity == AlertSeverity.MEDIUM
 
 
-class GetMatchingRulesTests(TestCase):
+@pytest.mark.django_db
+class TestGetMatchingRules:
     """
     Tests for _get_matching_rules()
     """
-
-    def setUp(self):
-        self.user = User.objects.create_user(
-            email="owner@example.com",
-            password="Password@123",
-        )
-
-        self.service = Service.objects.create(
-            name="Monitoring API",
-            created_by=self.user,
-        )
-
-    def _log(
-        self,
-        status=LogStatus.SUCCESS,
-        status_code=200,
-        response_time_ms=100,
-    ):
-        return Log.objects.create(
-            service=self.service,
-            status=status,
-            status_code=status_code,
-            response_time_ms=response_time_ms,
-            message="Test",
-        )
 
     # ---------------------------------------------------------
     # NO MATCH
     # ---------------------------------------------------------
 
-    def test_success_log_returns_no_rules(self):
-        log = self._log()
+    def test_success_log_returns_no_rules(self, service):
+        log = make_log(service)
 
         rules = _get_matching_rules(log)
 
-        self.assertEqual(rules, [])
+        assert rules == []
 
     # ---------------------------------------------------------
     # ERROR
     # ---------------------------------------------------------
 
-    def test_error_status_matches_error_rule(self):
-        log = self._log(
-            status=LogStatus.ERROR,
-            status_code=500,
-        )
+    def test_error_status_matches_error_rule(self, service):
+        log = make_log(service, status=LogStatus.ERROR, status_code=500)
 
         rules = _get_matching_rules(log)
 
-        self.assertEqual(len(rules), 1)
-        self.assertEqual(
-            rules[0]["type"],
-            AlertType.ERROR,
-        )
+        assert len(rules) == 1
+        assert rules[0]["type"] == AlertType.ERROR
 
-    def test_status_code_500_matches_error_rule(self):
-        log = self._log(
-            status=LogStatus.SUCCESS,
-            status_code=500,
-        )
+    def test_status_code_500_matches_error_rule(self, service):
+        log = make_log(service, status=LogStatus.SUCCESS, status_code=500)
 
         rules = _get_matching_rules(log)
 
-        self.assertEqual(len(rules), 1)
-        self.assertEqual(
-            rules[0]["type"],
-            AlertType.ERROR,
-        )
+        assert len(rules) == 1
+        assert rules[0]["type"] == AlertType.ERROR
 
     # ---------------------------------------------------------
     # LATENCY
     # ---------------------------------------------------------
 
-    def test_high_latency_matches_latency_rule(self):
-        log = self._log(
-            response_time_ms=1501,
-        )
+    def test_high_latency_matches_latency_rule(self, service):
+        log = make_log(service, response_time_ms=1501)
 
         rules = _get_matching_rules(log)
 
-        self.assertEqual(len(rules), 1)
-        self.assertEqual(
-            rules[0]["type"],
-            AlertType.HIGH_LATENCY,
-        )
+        assert len(rules) == 1
+        assert rules[0]["type"] == AlertType.HIGH_LATENCY
 
-    def test_exact_threshold_not_matched(self):
-        log = self._log(
-            response_time_ms=1000,
-        )
+    def test_exact_threshold_not_matched(self, service):
+        log = make_log(service, response_time_ms=1000)
 
         rules = _get_matching_rules(log)
 
-        self.assertEqual(rules, [])
+        assert rules == []
 
     # ---------------------------------------------------------
     # BOTH
     # ---------------------------------------------------------
 
-    def test_error_and_latency_match_two_rules(self):
-        log = self._log(
+    def test_error_and_latency_match_two_rules(self, service):
+        log = make_log(
+            service,
             status=LogStatus.ERROR,
             status_code=500,
             response_time_ms=3000,
@@ -400,62 +224,42 @@ class GetMatchingRulesTests(TestCase):
 
         rules = _get_matching_rules(log)
 
-        self.assertEqual(len(rules), 2)
+        assert len(rules) == 2
 
         types = {rule["type"] for rule in rules}
-
-        self.assertIn(AlertType.ERROR, types)
-        self.assertIn(AlertType.HIGH_LATENCY, types)
+        assert AlertType.ERROR in types
+        assert AlertType.HIGH_LATENCY in types
 
     # ---------------------------------------------------------
     # EDGE CASES
     # ---------------------------------------------------------
 
-    def test_none_response_time(self):
-        log = self._log(
-            response_time_ms=None,
-        )
+    def test_none_response_time(self, service):
+        log = make_log(service, response_time_ms=None)
 
         rules = _get_matching_rules(log)
 
-        self.assertEqual(rules, [])
+        assert rules == []
 
-    def test_none_status_code(self):
-        log = self._log(
-            status_code=None,
-        )
+    def test_none_status_code(self, service):
+        log = make_log(service, status_code=None)
 
         rules = _get_matching_rules(log)
 
-        self.assertEqual(rules, [])
+        assert rules == []
 
 
-class ProcessRuleTests(TestCase):
+@pytest.mark.django_db
+class TestProcessRule:
     """
     Tests for _process_rule()
     """
 
-    def setUp(self):
-        self.user = User.objects.create_user(
-            email="owner@example.com",
-            password="Password@123",
-        )
-
-        self.service = Service.objects.create(
-            name="Backend",
-            created_by=self.user,
-        )
-
-    def _log(
-        self,
-        status=LogStatus.ERROR,
-        status_code=500,
-        response_time_ms=2500,
-    ):
-        return Log.objects.create(
-            service=self.service,
-            status=status,
-            status_code=status_code,
+    def _log(self, service, response_time_ms=2500):
+        return make_log(
+            service,
+            status=LogStatus.ERROR,
+            status_code=500,
             response_time_ms=response_time_ms,
             message="Failure",
         )
@@ -465,186 +269,116 @@ class ProcessRuleTests(TestCase):
     # ---------------------------------------------------------
 
     @patch("monitoring.services.alert_service._create_or_update_alert")
-    def test_error_rule_calls_create_update(
-        self,
-        mock_create,
-    ):
+    def test_error_rule_calls_create_update(self, mock_create, service):
         mock_alert = MagicMock()
         mock_alert.id = 1
-
         mock_create.return_value = mock_alert
 
-        log = self._log()
+        log = self._log(service)
+        rule = {"type": AlertType.ERROR}
 
-        rule = {
-            "type": AlertType.ERROR,
-        }
+        alert = _process_rule(log, rule)
 
-        alert = _process_rule(
-            log,
-            rule,
-        )
-
-        self.assertEqual(alert, mock_alert)
-
+        assert alert == mock_alert
         mock_create.assert_called_once()
 
         kwargs = mock_create.call_args.kwargs
-
-        self.assertEqual(
-            kwargs["alert_type"],
-            AlertType.ERROR,
-        )
-
-        self.assertEqual(
-            kwargs["severity"],
-            AlertSeverity.HIGH,
-        )
-
-        self.assertEqual(
-            kwargs["service"],
-            self.service,
-        )
-
-        self.assertEqual(
-            kwargs["log"],
-            log,
-        )
+        assert kwargs["alert_type"] == AlertType.ERROR
+        assert kwargs["severity"] == AlertSeverity.HIGH
+        assert kwargs["service"] == service
+        assert kwargs["log"] == log
 
     # ---------------------------------------------------------
     # LATENCY RULE
     # ---------------------------------------------------------
 
     @patch("monitoring.services.alert_service._create_or_update_alert")
-    def test_latency_rule_calls_create_update(
-        self,
-        mock_create,
-    ):
+    def test_latency_rule_calls_create_update(self, mock_create, service):
         mock_alert = MagicMock()
         mock_alert.id = 5
-
         mock_create.return_value = mock_alert
 
-        log = self._log(
-            response_time_ms=2500,
-        )
+        log = self._log(service, response_time_ms=2500)
+        rule = {"type": AlertType.HIGH_LATENCY}
 
-        rule = {
-            "type": AlertType.HIGH_LATENCY,
-        }
+        alert = _process_rule(log, rule)
 
-        alert = _process_rule(
-            log,
-            rule,
-        )
-
-        self.assertEqual(alert, mock_alert)
+        assert alert == mock_alert
 
         kwargs = mock_create.call_args.kwargs
-
-        self.assertEqual(
-            kwargs["alert_type"],
-            AlertType.HIGH_LATENCY,
-        )
-
-        self.assertEqual(
-            kwargs["severity"],
-            AlertSeverity.MEDIUM,
-        )
+        assert kwargs["alert_type"] == AlertType.HIGH_LATENCY
+        assert kwargs["severity"] == AlertSeverity.MEDIUM
 
     @patch("monitoring.services.alert_service._create_or_update_alert")
-    def test_very_high_latency_is_high_severity(
-        self,
-        mock_create,
-    ):
+    def test_very_high_latency_is_high_severity(self, mock_create, service):
         mock_alert = MagicMock()
         mock_create.return_value = mock_alert
 
-        log = self._log(
-            response_time_ms=5001,
-        )
+        log = self._log(service, response_time_ms=5001)
 
         _process_rule(
             log,
-            {
-                "type": AlertType.HIGH_LATENCY,
-            },
+            {"type": AlertType.HIGH_LATENCY},
         )
 
         kwargs = mock_create.call_args.kwargs
-
-        self.assertEqual(
-            kwargs["severity"],
-            AlertSeverity.HIGH,
-        )
+        assert kwargs["severity"] == AlertSeverity.HIGH
 
     # ---------------------------------------------------------
     # UNKNOWN RULE
     # ---------------------------------------------------------
 
     @patch("monitoring.services.alert_service._create_or_update_alert")
-    def test_unknown_rule_returns_none(
-        self,
-        mock_create,
-    ):
-        log = self._log()
+    def test_unknown_rule_returns_none(self, mock_create, service):
+        log = self._log(service)
 
         alert = _process_rule(
             log,
-            {
-                "type": "something-random",
-            },
+            {"type": "something-random"},
         )
 
-        self.assertIsNone(alert)
-
+        assert alert is None
         mock_create.assert_not_called()
 
 
-class CreateOrUpdateAlertTests(TestCase):
-
-    def setUp(self):
-        self.user = User.objects.create_user(
-            email="owner@example.com",
-            password="Password@123",
-        )
-
-        self.service = Service.objects.create(
-            name="API",
-            created_by=self.user,
-        )
-
-        self.log = Log.objects.create(
-            service=self.service,
+@pytest.mark.django_db
+class TestCreateOrUpdateAlert:
+    def _create_base_log(self, service):
+        return make_log(
+            service,
             status=LogStatus.ERROR,
             status_code=500,
             message="Boom",
         )
 
-    def test_create_new_alert(self):
+    def test_create_new_alert(self, service):
+        log = self._create_base_log(service)
+
         alert = _create_or_update_alert(
-            service=self.service,
-            log=self.log,
+            service=service,
+            log=log,
             alert_type=AlertType.ERROR,
             severity=AlertSeverity.HIGH,
             alert_key="error:1:500",
             message="Server error",
         )
 
-        self.assertIsNotNone(alert)
-        self.assertEqual(Alert.objects.count(), 1)
+        assert alert is not None
+        assert Alert.objects.count() == 1
 
         alert.refresh_from_db()
 
-        self.assertEqual(alert.service, self.service)
-        self.assertEqual(alert.log, self.log)
-        self.assertEqual(alert.trigger_count, 1)
-        self.assertEqual(alert.status, AlertStatus.OPEN)
+        assert alert.service == service
+        assert alert.log == log
+        assert alert.trigger_count == 1
+        assert alert.status == AlertStatus.OPEN
 
-    def test_existing_alert_increments_trigger_count(self):
+    def test_existing_alert_increments_trigger_count(self, service):
+        log = self._create_base_log(service)
+
         alert = Alert.objects.create(
-            service=self.service,
-            log=self.log,
+            service=service,
+            log=log,
             alert_type=AlertType.ERROR,
             alert_key="error:1:500",
             severity=AlertSeverity.HIGH,
@@ -655,8 +389,8 @@ class CreateOrUpdateAlertTests(TestCase):
         alert.save(update_fields=["last_triggered_at"])
 
         _create_or_update_alert(
-            service=self.service,
-            log=self.log,
+            service=service,
+            log=log,
             alert_type=AlertType.ERROR,
             severity=AlertSeverity.CRITICAL,
             alert_key="error:1:500",
@@ -665,14 +399,16 @@ class CreateOrUpdateAlertTests(TestCase):
 
         alert.refresh_from_db()
 
-        self.assertEqual(alert.trigger_count, 2)
-        self.assertEqual(alert.severity, AlertSeverity.CRITICAL)
-        self.assertEqual(alert.log, self.log)
+        assert alert.trigger_count == 2
+        assert alert.severity == AlertSeverity.CRITICAL
+        assert alert.log == log
 
-    def test_alert_in_cooldown_not_incremented(self):
+    def test_alert_in_cooldown_not_incremented(self, service):
+        log = self._create_base_log(service)
+
         alert = Alert.objects.create(
-            service=self.service,
-            log=self.log,
+            service=service,
+            log=log,
             alert_type=AlertType.ERROR,
             alert_key="error:1:500",
             severity=AlertSeverity.HIGH,
@@ -683,8 +419,8 @@ class CreateOrUpdateAlertTests(TestCase):
         alert.save(update_fields=["last_triggered_at"])
 
         _create_or_update_alert(
-            service=self.service,
-            log=self.log,
+            service=service,
+            log=log,
             alert_type=AlertType.ERROR,
             severity=AlertSeverity.CRITICAL,
             alert_key="error:1:500",
@@ -693,23 +429,22 @@ class CreateOrUpdateAlertTests(TestCase):
 
         alert.refresh_from_db()
 
-        self.assertEqual(alert.trigger_count, 1)
+        assert alert.trigger_count == 1
 
-
-    def test_integrity_error_recovery_existing_alert(self):
+    def test_integrity_error_recovery_existing_alert(self, service):
+        log = self._create_base_log(service)
 
         alert = Alert.objects.create(
-            service=self.service,
-            log=self.log,
+            service=service,
+            log=log,
             alert_type=AlertType.ERROR,
             alert_key="error:1:500",
             severity=AlertSeverity.HIGH,
             message="Existing",
         )
 
-        alert.last_triggered_at = (
-            timezone.now()
-            - timedelta(seconds=ALERT_COOLDOWN_SECONDS + 5)
+        alert.last_triggered_at = timezone.now() - timedelta(
+            seconds=ALERT_COOLDOWN_SECONDS + 5
         )
         alert.save(update_fields=["last_triggered_at"])
 
@@ -717,10 +452,9 @@ class CreateOrUpdateAlertTests(TestCase):
             "monitoring.services.alert_service.Alert.objects.create",
             side_effect=IntegrityError,
         ):
-
             recovered = _create_or_update_alert(
-                service=self.service,
-                log=self.log,
+                service=service,
+                log=log,
                 alert_type=AlertType.ERROR,
                 severity=AlertSeverity.CRITICAL,
                 alert_key="error:1:500",
@@ -729,24 +463,20 @@ class CreateOrUpdateAlertTests(TestCase):
 
         recovered.refresh_from_db()
 
-        self.assertEqual(recovered.trigger_count, 2)
+        assert recovered.trigger_count == 2
 
-    @patch(
-        "monitoring.services.alert_service.Alert.objects.filter"
-    )
-    @patch(
-        "monitoring.services.alert_service.Alert.objects.create"
-    )
+    @patch("monitoring.services.alert_service.Alert.objects.filter")
+    @patch("monitoring.services.alert_service.Alert.objects.create")
     def test_integrity_error_recovery_creates_new_alert(
-        self,
-        mock_create,
-        mock_filter,
+        self, mock_create, mock_filter, service
     ):
+        log = self._create_base_log(service)
+
         mock_create.side_effect = [
             IntegrityError,
             Alert(
-                service=self.service,
-                log=self.log,
+                service=service,
+                log=log,
                 alert_type=AlertType.ERROR,
                 alert_key="error",
                 severity=AlertSeverity.HIGH,
@@ -757,12 +487,12 @@ class CreateOrUpdateAlertTests(TestCase):
         mock_filter.return_value.first.return_value = None
 
         alert = _create_or_update_alert(
-            service=self.service,
-            log=self.log,
+            service=service,
+            log=log,
             alert_type=AlertType.ERROR,
             severity=AlertSeverity.HIGH,
             alert_key="error",
             message="Recovered",
         )
 
-        self.assertIsNotNone(alert)
+        assert alert is not None
