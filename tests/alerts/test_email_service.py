@@ -1,8 +1,7 @@
 from unittest.mock import patch
 
+import pytest
 from django.conf import settings
-
-from django.test import TestCase
 
 from alerts.models import (
     AlertSeverity,
@@ -12,18 +11,17 @@ from alerts.models import (
 from alerts.services.email_service import (
     _build_body,
     _build_subject,
+    send_alert_email,
 )
-
 from tests.factories import AlertFactory
-
-from alerts.services.email_service import send_alert_email
 
 
 # ============================================================
 # Subject Builder Tests
 # ============================================================
 
-class EmailSubjectTests(TestCase):
+@pytest.mark.django_db
+class TestEmailSubject:
     """
     Unit tests for _build_subject().
     """
@@ -42,212 +40,108 @@ class EmailSubjectTests(TestCase):
             f"{alert.service.name}"
         )
 
-        self.assertEqual(
-            subject,
-            expected,
-        )
+        assert subject == expected
 
     def test_subject_contains_uppercase_severity(self):
-        alert = AlertFactory(
-            severity=AlertSeverity.HIGH,
-        )
-
+        alert = AlertFactory(severity=AlertSeverity.HIGH)
         subject = _build_subject(alert)
-
-        self.assertIn(
-            "[HIGH]",
-            subject,
-        )
+        assert "[HIGH]" in subject
 
     def test_subject_contains_alert_type_display(self):
-        alert = AlertFactory(
-            alert_type=AlertType.DOWNTIME,
-        )
-
+        alert = AlertFactory(alert_type=AlertType.DOWNTIME)
         subject = _build_subject(alert)
-
-        self.assertIn(
-            "Downtime",
-            subject,
-        )
+        assert "Downtime" in subject
 
     def test_subject_contains_service_name(self):
         alert = AlertFactory()
-
         subject = _build_subject(alert)
-
-        self.assertIn(
-            alert.service.name,
-            subject,
-        )
+        assert alert.service.name in subject
 
     def test_subject_for_high_latency_alert(self):
         alert = AlertFactory(
             alert_type=AlertType.HIGH_LATENCY,
             severity=AlertSeverity.MEDIUM,
         )
-
         subject = _build_subject(alert)
-
-        self.assertEqual(
-            subject,
-            f"[MEDIUM] High Latency - {alert.service.name}",
-        )
+        assert subject == f"[MEDIUM] High Latency - {alert.service.name}"
 
     def test_subject_has_three_sections(self):
         alert = AlertFactory()
-
         subject = _build_subject(alert)
 
-        self.assertEqual(
-            subject.count("-"),
-            1,
-        )
-
-        self.assertTrue(
-            subject.startswith("["),
-        )
-
-        self.assertTrue(
-            "]" in subject,
-        )
+        assert subject.count("-") == 1
+        assert subject.startswith("[")
+        assert "]" in subject
 
 
 # ============================================================
 # Body Builder Tests
 # ============================================================
 
-class EmailBodyTests(TestCase):
+@pytest.mark.django_db
+class TestEmailBody:
     """
     Unit tests for _build_body().
     """
 
     def test_body_contains_alert_title(self):
         alert = AlertFactory()
-
         body = _build_body(alert)
-
-        self.assertIn(
-            "AI Ops Monitoring Alert",
-            body,
-        )
+        assert "AI Ops Monitoring Alert" in body
 
     def test_body_contains_alert_id(self):
         alert = AlertFactory()
-
         body = _build_body(alert)
-
-        self.assertIn(
-            str(alert.id),
-            body,
-        )
+        assert str(alert.id) in body
 
     def test_body_contains_service_name(self):
         alert = AlertFactory()
-
         body = _build_body(alert)
-
-        self.assertIn(
-            alert.service.name,
-            body,
-        )
+        assert alert.service.name in body
 
     def test_body_contains_alert_type_display(self):
-        alert = AlertFactory(
-            alert_type=AlertType.DOWNTIME,
-        )
-
+        alert = AlertFactory(alert_type=AlertType.DOWNTIME)
         body = _build_body(alert)
-
-        self.assertIn(
-            "Downtime",
-            body,
-        )
+        assert "Downtime" in body
 
     def test_body_contains_severity_display(self):
-        alert = AlertFactory(
-            severity=AlertSeverity.CRITICAL,
-        )
-
+        alert = AlertFactory(severity=AlertSeverity.CRITICAL)
         body = _build_body(alert)
-
-        self.assertIn(
-            "Critical",
-            body,
-        )
+        assert "Critical" in body
 
     def test_body_contains_status_display(self):
-        alert = AlertFactory(
-            status=AlertStatus.ACKNOWLEDGED,
-        )
-
+        alert = AlertFactory(status=AlertStatus.ACKNOWLEDGED)
         body = _build_body(alert)
-
-        self.assertIn(
-            "Acknowledged",
-            body,
-        )
+        assert "Acknowledged" in body
 
     def test_body_contains_message(self):
-        alert = AlertFactory(
-            message="Database connection failed.",
-        )
-
+        alert = AlertFactory(message="Database connection failed.")
         body = _build_body(alert)
-
-        self.assertIn(
-            "Database connection failed.",
-            body,
-        )
+        assert "Database connection failed." in body
 
     def test_body_contains_trigger_count(self):
-        alert = AlertFactory(
-            trigger_count=5,
-        )
-
+        alert = AlertFactory(trigger_count=5)
         body = _build_body(alert)
-
-        self.assertIn(
-            "5",
-            body,
-        )
+        assert "5" in body
 
     def test_body_contains_created_at(self):
         alert = AlertFactory()
-
         body = _build_body(alert)
-
-        self.assertIn(
-            str(alert.created_at),
-            body,
-        )
+        assert str(alert.created_at) in body
 
     def test_body_contains_last_triggered_at(self):
         alert = AlertFactory()
-
         body = _build_body(alert)
-
-        self.assertIn(
-            str(alert.last_triggered_at),
-            body,
-        )
+        assert str(alert.last_triggered_at) in body
 
     def test_body_is_stripped(self):
         alert = AlertFactory()
-
         body = _build_body(alert)
+        assert body == body.strip()
 
-        self.assertEqual(
-            body,
-            body.strip(),
-        )
-
-    def test_body_contains_all_expected_sections(self):
-        alert = AlertFactory()
-
-        body = _build_body(alert)
-
-        expected_sections = [
+    @pytest.mark.parametrize(
+        "section",
+        [
             "Alert ID",
             "Service",
             "Alert Type",
@@ -257,14 +151,12 @@ class EmailBodyTests(TestCase):
             "Trigger Count",
             "Created At",
             "Last Triggered",
-        ]
-
-        for section in expected_sections:
-            with self.subTest(section=section):
-                self.assertIn(
-                    section,
-                    body,
-                )
+        ],
+    )
+    def test_body_contains_all_expected_sections(self, section):
+        alert = AlertFactory()
+        body = _build_body(alert)
+        assert section in body
 
     def test_body_supports_multiline_message(self):
         alert = AlertFactory(
@@ -274,52 +166,28 @@ class EmailBodyTests(TestCase):
                 "Escalated"
             ),
         )
-
         body = _build_body(alert)
-
-        self.assertIn(
-            "Database error",
-            body,
-        )
-
-        self.assertIn(
-            "Retry failed",
-            body,
-        )
-
-        self.assertIn(
-            "Escalated",
-            body,
-        )
+        assert "Database error" in body
+        assert "Retry failed" in body
+        assert "Escalated" in body
 
     def test_body_handles_empty_message(self):
-        alert = AlertFactory(
-            message="",
-        )
-
+        alert = AlertFactory(message="")
         body = _build_body(alert)
-
-        self.assertIn(
-            "Message:",
-            body,
-        )
+        assert "Message:" in body
 
     def test_body_handles_zero_trigger_count(self):
-        alert = AlertFactory(
-            trigger_count=0,
-        )
-
+        alert = AlertFactory(trigger_count=0)
         body = _build_body(alert)
-
-        self.assertIn(
-            "0",
-            body,
-        )
+        assert "0" in body
 
 
+# ============================================================
+# send_alert_email() Success Tests
+# ============================================================
 
-
-class SendAlertEmailSuccessTests(TestCase):
+@pytest.mark.django_db
+class TestSendAlertEmailSuccess:
     """
     Unit tests covering successful email delivery.
     """
@@ -332,11 +200,8 @@ class SendAlertEmailSuccessTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         result = send_alert_email(alert)
-
-        self.assertTrue(result)
-
+        assert result is True
         mock_send_email.assert_called_once()
 
     @patch("alerts.services.email_service.logger")
@@ -347,9 +212,7 @@ class SendAlertEmailSuccessTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         send_alert_email(alert)
-
         mock_send_email.assert_called_once()
 
     @patch("alerts.services.email_service.logger")
@@ -360,15 +223,9 @@ class SendAlertEmailSuccessTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         expected_subject = _build_subject(alert)
-
         send_alert_email(alert)
-
-        self.assertEqual(
-            mock_send_email.call_args.kwargs["subject"],
-            expected_subject,
-        )
+        assert mock_send_email.call_args.kwargs["subject"] == expected_subject
 
     @patch("alerts.services.email_service.logger")
     @patch("alerts.services.email_service.send_email")
@@ -378,15 +235,9 @@ class SendAlertEmailSuccessTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         expected_body = _build_body(alert)
-
         send_alert_email(alert)
-
-        self.assertEqual(
-            mock_send_email.call_args.kwargs["message"],
-            expected_body,
-        )
+        assert mock_send_email.call_args.kwargs["message"] == expected_body
 
     @patch("alerts.services.email_service.logger")
     @patch("alerts.services.email_service.send_email")
@@ -396,13 +247,8 @@ class SendAlertEmailSuccessTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         send_alert_email(alert)
-
-        self.assertEqual(
-            mock_send_email.call_args.kwargs["recipient_list"],
-            settings.ALERT_EMAIL_RECIPIENTS,
-        )
+        assert mock_send_email.call_args.kwargs["recipient_list"] == settings.ALERT_EMAIL_RECIPIENTS
 
     @patch("alerts.services.email_service.logger")
     @patch("alerts.services.email_service.send_email")
@@ -412,9 +258,7 @@ class SendAlertEmailSuccessTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         send_alert_email(alert)
-
         mock_logger.info.assert_any_call(
             "Preparing email notification for alert %s",
             alert.id,
@@ -428,9 +272,7 @@ class SendAlertEmailSuccessTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         send_alert_email(alert)
-
         mock_logger.info.assert_any_call(
             "Email notification sent successfully for alert %s",
             alert.id,
@@ -448,20 +290,13 @@ class SendAlertEmailSuccessTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         mock_build_subject.return_value = "Subject"
-
         mock_build_body.return_value = "Body"
 
         send_alert_email(alert)
 
-        mock_build_subject.assert_called_once_with(
-            alert,
-        )
-
-        mock_build_body.assert_called_once_with(
-            alert,
-        )
+        mock_build_subject.assert_called_once_with(alert)
+        mock_build_body.assert_called_once_with(alert)
 
     @patch("alerts.services.email_service.logger")
     @patch("alerts.services.email_service.send_email")
@@ -475,9 +310,7 @@ class SendAlertEmailSuccessTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         mock_build_subject.return_value = "My Subject"
-
         mock_build_body.return_value = "My Body"
 
         send_alert_email(alert)
@@ -496,13 +329,8 @@ class SendAlertEmailSuccessTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         send_alert_email(alert)
-
-        self.assertEqual(
-            mock_logger.info.call_count,
-            2,
-        )
+        assert mock_logger.info.call_count == 2
 
     @patch("alerts.services.email_service.logger")
     @patch("alerts.services.email_service.send_email")
@@ -512,68 +340,44 @@ class SendAlertEmailSuccessTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         send_alert_email(alert)
-
         mock_logger.exception.assert_not_called()
 
     @patch("alerts.services.email_service.logger")
     @patch("alerts.services.email_service.send_email")
+    @pytest.mark.parametrize("alert_type", AlertType.values)
     def test_email_service_accepts_all_alert_types(
         self,
         mock_send_email,
         mock_logger,
+        alert_type,
     ):
-        for alert_type in AlertType.values:
-
-            with self.subTest(alert_type=alert_type):
-
-                alert = AlertFactory(
-                    alert_type=alert_type,
-                )
-
-                result = send_alert_email(alert)
-
-                self.assertTrue(result)
-
-        self.assertEqual(
-            mock_send_email.call_count,
-            len(AlertType.values),
-        )
+        alert = AlertFactory(alert_type=alert_type)
+        result = send_alert_email(alert)
+        assert result is True
+        mock_send_email.assert_called_once()
 
     @patch("alerts.services.email_service.logger")
     @patch("alerts.services.email_service.send_email")
+    @pytest.mark.parametrize("severity", AlertSeverity.values)
     def test_email_service_accepts_all_severities(
         self,
         mock_send_email,
         mock_logger,
+        severity,
     ):
-        for severity in AlertSeverity.values:
-
-            with self.subTest(severity=severity):
-
-                alert = AlertFactory(
-                    severity=severity,
-                )
-
-                result = send_alert_email(alert)
-
-                self.assertTrue(result)
-
-        self.assertEqual(
-            mock_send_email.call_count,
-            len(AlertSeverity.values),
-        )
-
-
+        alert = AlertFactory(severity=severity)
+        result = send_alert_email(alert)
+        assert result is True
+        mock_send_email.assert_called_once()
 
 
 # ============================================================
 # send_alert_email() Failure Tests
 # ============================================================
 
-
-class SendAlertEmailFailureTests(TestCase):
+@pytest.mark.django_db
+class TestSendAlertEmailFailure:
     """
     Unit tests covering failure scenarios.
     """
@@ -586,12 +390,9 @@ class SendAlertEmailFailureTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
+        mock_send_email.side_effect = RuntimeError("SMTP unavailable")
 
-        mock_send_email.side_effect = RuntimeError(
-            "SMTP unavailable"
-        )
-
-        with self.assertRaises(RuntimeError):
+        with pytest.raises(RuntimeError):
             send_alert_email(alert)
 
     @patch("alerts.services.email_service.logger")
@@ -602,12 +403,9 @@ class SendAlertEmailFailureTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
+        mock_send_email.side_effect = Exception("Mail server failed")
 
-        mock_send_email.side_effect = Exception(
-            "Mail server failed"
-        )
-
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):
             send_alert_email(alert)
 
         mock_logger.exception.assert_called_once_with(
@@ -623,10 +421,9 @@ class SendAlertEmailFailureTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         mock_send_email.side_effect = Exception()
 
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):
             send_alert_email(alert)
 
         success_call = (
@@ -634,10 +431,7 @@ class SendAlertEmailFailureTests(TestCase):
             alert.id,
         )
 
-        self.assertNotIn(
-            success_call,
-            mock_logger.info.call_args_list,
-        )
+        assert success_call not in mock_logger.info.call_args_list
 
     @patch("alerts.services.email_service.logger")
     @patch("alerts.services.email_service.send_email")
@@ -647,10 +441,9 @@ class SendAlertEmailFailureTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         mock_send_email.side_effect = Exception()
 
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):
             send_alert_email(alert)
 
         mock_logger.info.assert_any_call(
@@ -666,10 +459,9 @@ class SendAlertEmailFailureTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         mock_send_email.side_effect = Exception()
 
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):
             send_alert_email(alert)
 
         mock_send_email.assert_called_once()
@@ -686,30 +478,23 @@ class SendAlertEmailFailureTests(TestCase):
         mock_logger,
     ):
         alert = AlertFactory()
-
         mock_build_subject.return_value = "Subject"
         mock_build_body.return_value = "Body"
-
         mock_send_email.side_effect = Exception()
 
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):
             send_alert_email(alert)
 
-        mock_build_subject.assert_called_once_with(
-            alert,
-        )
-
-        mock_build_body.assert_called_once_with(
-            alert,
-        )
+        mock_build_subject.assert_called_once_with(alert)
+        mock_build_body.assert_called_once_with(alert)
 
 
 # ============================================================
 # Edge Case Tests
 # ============================================================
 
-
-class EmailServiceEdgeCaseTests(TestCase):
+@pytest.mark.django_db
+class TestEmailServiceEdgeCase:
     """
     Miscellaneous edge cases.
     """
@@ -721,13 +506,9 @@ class EmailServiceEdgeCaseTests(TestCase):
         mock_logger,
         mock_send_email,
     ):
-        alert = AlertFactory(
-            message="",
-        )
-
+        alert = AlertFactory(message="")
         result = send_alert_email(alert)
-
-        self.assertTrue(result)
+        assert result is True
 
     @patch("alerts.services.email_service.send_email")
     @patch("alerts.services.email_service.logger")
@@ -736,13 +517,9 @@ class EmailServiceEdgeCaseTests(TestCase):
         mock_logger,
         mock_send_email,
     ):
-        alert = AlertFactory(
-            trigger_count=0,
-        )
-
+        alert = AlertFactory(trigger_count=0)
         result = send_alert_email(alert)
-
-        self.assertTrue(result)
+        assert result is True
 
     @patch("alerts.services.email_service.send_email")
     @patch("alerts.services.email_service.logger")
@@ -752,12 +529,9 @@ class EmailServiceEdgeCaseTests(TestCase):
         mock_send_email,
     ):
         alert = AlertFactory()
-
         alert.last_triggered_at = None
-
         result = send_alert_email(alert)
-
-        self.assertTrue(result)
+        assert result is True
 
     @patch("alerts.services.email_service.send_email")
     @patch("alerts.services.email_service.logger")
@@ -766,13 +540,9 @@ class EmailServiceEdgeCaseTests(TestCase):
         mock_logger,
         mock_send_email,
     ):
-        alert = AlertFactory(
-            message="A" * 255,
-        )
-
+        alert = AlertFactory(message="A" * 255)
         result = send_alert_email(alert)
-
-        self.assertTrue(result)
+        assert result is True
 
     @patch("alerts.services.email_service.send_email")
     @patch("alerts.services.email_service.logger")
@@ -781,13 +551,9 @@ class EmailServiceEdgeCaseTests(TestCase):
         mock_logger,
         mock_send_email,
     ):
-        alert = AlertFactory(
-            message="🚨 Database failure — सर्वर डाउन",
-        )
-
+        alert = AlertFactory(message="🚨 Database failure — सर्वर डाउन")
         result = send_alert_email(alert)
-
-        self.assertTrue(result)
+        assert result is True
 
     @patch("alerts.services.email_service.send_email")
     @patch("alerts.services.email_service.logger")
@@ -803,7 +569,5 @@ class EmailServiceEdgeCaseTests(TestCase):
                 "Line 3"
             ),
         )
-
         result = send_alert_email(alert)
-
-        self.assertTrue(result)
+        assert result is True
