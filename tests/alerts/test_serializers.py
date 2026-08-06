@@ -1,4 +1,4 @@
-from django.test import TestCase
+import pytest
 from rest_framework.exceptions import ErrorDetail
 
 from alerts.models import (
@@ -13,30 +13,20 @@ from alerts.serializers.alert_serializer import (
     AlertResolveSerializer,
 )
 
-from tests.factories import (
-    UserFactory,
-    ServiceFactory,
-    AlertFactory,
-)
+from tests.factories import AlertFactory
 
 
-class AlertWriteSerializerTests(TestCase):
-
-    def setUp(self):
-        self.user = UserFactory()
-
-        self.service = ServiceFactory(
-            created_by=self.user
-        )
+@pytest.mark.django_db
+class TestAlertWriteSerializer:
 
     # ---------------------------------------------------------
     # Valid Data
     # ---------------------------------------------------------
 
-    def test_valid_alert_creation(self):
+    def test_valid_alert_creation(self, service):
         serializer = AlertWriteSerializer(
             data={
-                "service": self.service.id,
+                "service": service.id,
                 "alert_type": AlertType.ERROR,
                 "alert_key": "error:500",
                 "severity": AlertSeverity.HIGH,
@@ -45,21 +35,17 @@ class AlertWriteSerializerTests(TestCase):
             }
         )
 
-        self.assertTrue(
-            serializer.is_valid(),
-            serializer.errors,
-        )
+        assert serializer.is_valid(), serializer.errors
 
 
     # ---------------------------------------------------------
     # Severity Validation
     # ---------------------------------------------------------
 
-    def test_invalid_severity_fails(self):
-
+    def test_invalid_severity_fails(self, service):
         serializer = AlertWriteSerializer(
             data={
-                "service": self.service.id,
+                "service": service.id,
                 "alert_type": AlertType.ERROR,
                 "alert_key": "error:500",
                 "severity": "invalid",
@@ -67,16 +53,10 @@ class AlertWriteSerializerTests(TestCase):
             }
         )
 
-        self.assertFalse(
-            serializer.is_valid()
-        )
-
-        self.assertEqual(
-            serializer.errors["severity"][0],
-            ErrorDetail(
-                '"invalid" is not a valid choice.',
-                code="invalid_choice",
-            ),
+        assert not serializer.is_valid()
+        assert serializer.errors["severity"][0] == ErrorDetail(
+            '"invalid" is not a valid choice.',
+            code="invalid_choice",
         )
 
 
@@ -84,27 +64,20 @@ class AlertWriteSerializerTests(TestCase):
     # Status Validation
     # ---------------------------------------------------------
 
-    def test_invalid_status_fails(self):
-
+    def test_invalid_status_fails(self, service):
         serializer = AlertWriteSerializer(
             data={
-                "service": self.service.id,
+                "service": service.id,
                 "alert_type": AlertType.ERROR,
                 "alert_key": "error:500",
                 "status": "invalid",
             }
         )
 
-        self.assertFalse(
-            serializer.is_valid()
-        )
-
-        self.assertEqual(
-            serializer.errors["status"][0],
-            ErrorDetail(
-                '"invalid" is not a valid choice.',
-                code="invalid_choice",
-            ),
+        assert not serializer.is_valid()
+        assert serializer.errors["status"][0] == ErrorDetail(
+            '"invalid" is not a valid choice.',
+            code="invalid_choice",
         )
 
 
@@ -112,26 +85,19 @@ class AlertWriteSerializerTests(TestCase):
     # Alert Type Validation
     # ---------------------------------------------------------
 
-    def test_invalid_alert_type_fails(self):
-
+    def test_invalid_alert_type_fails(self, service):
         serializer = AlertWriteSerializer(
             data={
-                "service": self.service.id,
+                "service": service.id,
                 "alert_type": "invalid",
                 "alert_key": "error:500",
             }
         )
 
-        self.assertFalse(
-            serializer.is_valid()
-        )
-
-        self.assertEqual(
-            serializer.errors["alert_type"][0],
-            ErrorDetail(
-                '"invalid" is not a valid choice.',
-                code="invalid_choice",
-            ),
+        assert not serializer.is_valid()
+        assert serializer.errors["alert_type"][0] == ErrorDetail(
+            '"invalid" is not a valid choice.',
+            code="invalid_choice",
         )
 
 
@@ -139,70 +105,48 @@ class AlertWriteSerializerTests(TestCase):
     # Alert Key Validation
     # ---------------------------------------------------------
 
-    def test_alert_key_is_trimmed(self):
-
+    def test_alert_key_is_trimmed(self, service):
         serializer = AlertWriteSerializer(
             data={
-                "service": self.service.id,
+                "service": service.id,
                 "alert_type": AlertType.ERROR,
                 "alert_key": "  error:500  ",
             }
         )
 
-        self.assertTrue(
-            serializer.is_valid(),
-            serializer.errors,
-        )
-
-        self.assertEqual(
-            serializer.validated_data["alert_key"],
-            "error:500",
-        )
+        assert serializer.is_valid(), serializer.errors
+        assert serializer.validated_data["alert_key"] == "error:500"
 
 
-    def test_empty_alert_key_fails(self):
-
+    def test_empty_alert_key_fails(self, service):
         serializer = AlertWriteSerializer(
             data={
-                "service": self.service.id,
+                "service": service.id,
                 "alert_type": AlertType.ERROR,
                 "alert_key": "",
             }
         )
 
-        self.assertFalse(
-            serializer.is_valid()
-        )
-
-        self.assertEqual(
-            serializer.errors["alert_key"][0],
-            ErrorDetail(
-                "This field may not be blank.",
-                code="blank",
-            ),
+        assert not serializer.is_valid()
+        assert serializer.errors["alert_key"][0] == ErrorDetail(
+            "This field may not be blank.",
+            code="blank",
         )
 
 
-    def test_invalid_alert_key_format_fails(self):
-
+    def test_invalid_alert_key_format_fails(self, service):
         serializer = AlertWriteSerializer(
             data={
-                "service": self.service.id,
+                "service": service.id,
                 "alert_type": AlertType.ERROR,
                 "alert_key": "server-error",
             }
         )
 
-        self.assertFalse(
-            serializer.is_valid()
-        )
-
-        self.assertEqual(
-            serializer.errors["alert_key"][0],
-            ErrorDetail(
-                "Alert key format must be '<type>:<id>'.",
-                code="invalid",
-            ),
+        assert not serializer.is_valid()
+        assert serializer.errors["alert_key"][0] == ErrorDetail(
+            "Alert key format must be '<type>:<id>'.",
+            code="invalid",
         )
 
 
@@ -210,77 +154,45 @@ class AlertWriteSerializerTests(TestCase):
     # Optional Message
     # ---------------------------------------------------------
 
-    def test_message_can_be_blank(self):
-
+    def test_message_can_be_blank(self, service):
         serializer = AlertWriteSerializer(
             data={
-                "service": self.service.id,
+                "service": service.id,
                 "alert_type": AlertType.ERROR,
                 "alert_key": "error:500",
                 "message": "",
             }
         )
 
-        self.assertTrue(
-            serializer.is_valid(),
-            serializer.errors,
-        )
+        assert serializer.is_valid(), serializer.errors
 
 
 
-class AlertReadSerializerTests(TestCase):
+@pytest.mark.django_db
+class TestAlertReadSerializer:
 
     def test_read_serializer_returns_expected_fields(self):
-
         alert = AlertFactory()
-
         serializer = AlertReadSerializer(alert)
-
         data = serializer.data
 
-        self.assertEqual(
-            data["id"],
-            alert.id,
-        )
-
-        self.assertEqual(
-            data["service"],
-            alert.service.id,
-        )
-
-        self.assertEqual(
-            data["service_name"],
-            alert.service.name,
-        )
-
-        self.assertEqual(
-            data["message"],
-            alert.message,
-        )
-
+        assert data["id"] == alert.id
+        assert data["service"] == alert.service.id
+        assert data["service_name"] == alert.service.name
+        assert data["message"] == alert.message
 
     def test_read_serializer_contains_read_only_fields(self):
-
         alert = AlertFactory()
-
         serializer = AlertReadSerializer(alert)
 
-        self.assertIn(
-            "created_at",
-            serializer.data,
-        )
-
-        self.assertIn(
-            "last_triggered_at",
-            serializer.data,
-        )
+        assert "created_at" in serializer.data
+        assert "last_triggered_at" in serializer.data
 
 
 
-class AlertResolveSerializerTests(TestCase):
+class TestAlertResolveSerializer:
 
     def test_resolving_alert_requires_note(self):
-
         serializer = AlertResolveSerializer(
             data={
                 "status": AlertStatus.RESOLVED,
@@ -288,21 +200,13 @@ class AlertResolveSerializerTests(TestCase):
             }
         )
 
-        self.assertFalse(
-            serializer.is_valid()
+        assert not serializer.is_valid()
+        assert serializer.errors["resolution_note"][0] == ErrorDetail(
+            "Resolution note is required.",
+            code="invalid",
         )
-
-        self.assertEqual(
-            serializer.errors["resolution_note"][0],
-            ErrorDetail(
-                "Resolution note is required.",
-                code="invalid",
-            ),
-        )
-
 
     def test_resolving_alert_with_note_is_valid(self):
-
         serializer = AlertResolveSerializer(
             data={
                 "status": AlertStatus.RESOLVED,
@@ -310,21 +214,13 @@ class AlertResolveSerializerTests(TestCase):
             }
         )
 
-        self.assertTrue(
-            serializer.is_valid(),
-            serializer.errors,
-        )
-
+        assert serializer.is_valid(), serializer.errors
 
     def test_open_status_without_note_is_valid(self):
-
         serializer = AlertResolveSerializer(
             data={
                 "status": AlertStatus.OPEN,
             }
         )
 
-        self.assertTrue(
-            serializer.is_valid(),
-            serializer.errors,
-        )
+        assert serializer.is_valid(), serializer.errors
